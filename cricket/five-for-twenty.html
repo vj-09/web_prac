@@ -1,0 +1,914 @@
+<title>Five-for-Twenty</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700;800&family=Source+Sans+3:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: a scoreboard band up top, then one working surface per tab; tables and lists sit on white "card" paper over a pale outfield ground. */
+:root {
+  --bg: #F4F7F3;
+  --surface: #FFFFFF;
+  --surface-2: #EAF0EB;
+  --ink: #14211C;
+  --muted: #56665F;
+  --line: #D5DED8;
+  --accent: #1E6A48;
+  --accent-ink: #FFFFFF;
+  --team-a: #C2362B;
+  --team-b: #2F6DB5;
+  --good: #1E7A45;
+  --warn: #A86500;
+  --bad: #B3261E;
+  --board: #17302A;
+  --board-ink: #F2F6F3;
+  --board-dim: #A9C3B8;
+  --display: "Saira Condensed", "Arial Narrow", "Roboto Condensed", sans-serif;
+  --body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1613; --surface: #16211D; --surface-2: #1C2A25; --ink: #E6EEE9; --muted: #95A69E;
+    --line: #2B3A34; --accent: #4FB384; --accent-ink: #0E1613; --team-a: #DE5A4C; --team-b: #4C8AD8;
+    --good: #5CC08A; --warn: #E0A33A; --bad: #EF7466; --board: #0A120F; --board-ink: #EAF2ED; --board-dim: #8FAA9E;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1613; --surface: #16211D; --surface-2: #1C2A25; --ink: #E6EEE9; --muted: #95A69E;
+  --line: #2B3A34; --accent: #4FB384; --accent-ink: #0E1613; --team-a: #DE5A4C; --team-b: #4C8AD8;
+  --good: #5CC08A; --warn: #E0A33A; --bad: #EF7466; --board: #0A120F; --board-ink: #EAF2ED; --board-dim: #8FAA9E;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; line-height: 1.1; }
+h2 { font-size: 1.7rem; font-weight: 700; letter-spacing: .01em; }
+h3 { font-size: 1.2rem; font-weight: 700; letter-spacing: .02em; }
+p { margin: 0; }
+.num, td.n, .mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.label { font-family: var(--display); text-transform: uppercase; letter-spacing: .08em; font-size: .8rem; font-weight: 600; color: var(--muted); }
+button, select, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Scoreboard band */
+.board { background: var(--board); color: var(--board-ink); padding-block: 22px 0; }
+.board-top { display: flex; flex-wrap: wrap; gap: 12px 28px; align-items: end; justify-content: space-between; }
+.board h1 { font-size: clamp(2.4rem, 7vw, 4rem); font-weight: 800; letter-spacing: -.01em; }
+.board h1 span { color: var(--board-dim); font-weight: 500; }
+.board p.sub { color: var(--board-dim); max-width: 60ch; margin-top: 6px; }
+.tally { display: flex; gap: 2px; font-family: var(--mono); }
+.tally div { background: rgba(255,255,255,.06); padding: 8px 12px; min-width: 76px; }
+.tally b { display: block; font-size: 1.5rem; font-weight: 600; color: var(--board-ink); }
+.tally small { color: var(--board-dim); font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; }
+.tabs { display: flex; gap: 4px; margin-top: 20px; overflow-x: auto; }
+.tabs button { background: transparent; border: 0; color: var(--board-dim); font-family: var(--display); font-size: 1.05rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; padding: 10px 16px; border-radius: 8px 8px 0 0; cursor: pointer; white-space: nowrap; }
+.tabs button[aria-selected="true"] { background: var(--bg); color: var(--ink); }
+.tabs button:hover:not([aria-selected="true"]) { color: var(--board-ink); }
+
+main { padding-block: 24px 64px; }
+section.view { display: grid; gap: 20px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; min-width: 0; }
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.grid-2 { display: grid; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 860px) { .grid-2 { grid-template-columns: minmax(0, 1fr); } }
+.intro { display: grid; gap: 6px; max-width: 72ch; }
+.intro p { color: var(--muted); }
+
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: transparent; padding: 6px 14px; cursor: pointer; font-family: var(--display); font-weight: 600; letter-spacing: .05em; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+input[type="search"], input[type="text"], select { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; min-width: 0; }
+.btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 8px; padding: 8px 16px; font-family: var(--display); font-weight: 700; letter-spacing: .05em; text-transform: uppercase; cursor: pointer; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: .92rem; }
+th, td { padding: 7px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-family: var(--display); text-transform: uppercase; letter-spacing: .06em; font-size: .8rem; color: var(--muted); font-weight: 600; position: sticky; top: 0; background: var(--surface); }
+th.sortable { cursor: pointer; }
+th.sorted::after { content: " \25BE"; }
+th.sorted.asc::after { content: " \25B4"; }
+td.n, th.n { text-align: right; }
+tr:hover td { background: var(--surface-2); }
+.role { display: inline-block; font-family: var(--display); font-weight: 700; font-size: .75rem; letter-spacing: .06em; padding: 1px 7px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
+.ctry { font-family: var(--mono); font-size: .8rem; color: var(--muted); }
+.muted { color: var(--muted); }
+.price { font-family: var(--mono); font-weight: 600; }
+
+/* Slots */
+.slots { display: grid; gap: 8px; }
+.slot { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; padding: 10px 12px; border: 1px dashed var(--line); border-radius: 8px; cursor: pointer; background: transparent; text-align: left; width: 100%; }
+.slot.filled { border-style: solid; background: var(--surface-2); }
+.slot.active { border: 2px solid var(--accent); padding: 9px 11px; }
+.slot .slot-name { font-family: var(--display); text-transform: uppercase; letter-spacing: .07em; font-size: .75rem; color: var(--muted); }
+.slot .who { font-weight: 600; }
+.slot .x { grid-row: span 2; font-family: var(--mono); }
+.budget { display: grid; gap: 6px; margin-block: 14px 4px; }
+.meter { height: 10px; background: var(--surface-2); border-radius: 5px; overflow: hidden; border: 1px solid var(--line); }
+.meter > i { display: block; height: 100%; background: var(--accent); transition: width .25s; }
+.meter.over > i { background: var(--bad); }
+.kv { display: flex; justify-content: space-between; gap: 10px; }
+
+.plist { display: grid; gap: 0; max-height: 520px; overflow-y: auto; border-top: 1px solid var(--line); }
+.prow { display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto; gap: 12px; align-items: center; padding: 8px 6px; border-bottom: 1px solid var(--line); background: transparent; border-left: 0; border-right: 0; border-top: 0; text-align: left; cursor: pointer; width: 100%; }
+.prow:hover:not(:disabled) { background: var(--surface-2); }
+.prow:disabled { opacity: .4; cursor: not-allowed; }
+.prow .nm { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.prow small { color: var(--muted); }
+
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+.stat { border-left: 3px solid var(--line); padding-left: 10px; }
+.stat b { display: block; font-family: var(--mono); font-size: 1.4rem; font-weight: 600; }
+.pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: .8rem; font-weight: 700; font-family: var(--display); letter-spacing: .05em; text-transform: uppercase; }
+.pill.good { background: color-mix(in srgb, var(--good) 18%, transparent); color: var(--good); }
+.pill.warn { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+.pill.bad { background: color-mix(in srgb, var(--bad) 18%, transparent); color: var(--bad); }
+
+/* Head to head */
+.h2h-teams { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) { .h2h-teams { grid-template-columns: 1fr; } }
+.team { border-top: 4px solid var(--c); }
+.team.a { --c: var(--team-a); }
+.team.b { --c: var(--team-b); }
+.team h3 { color: var(--ink); display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.team h3 .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: var(--c); margin-right: 6px; }
+.turn { font-family: var(--display); font-size: 1.3rem; font-weight: 700; letter-spacing: .03em; }
+.turn .who { color: var(--c); }
+.probbar { display: flex; height: 34px; border-radius: 6px; overflow: hidden; gap: 2px; background: var(--surface); }
+.probbar > div { display: flex; align-items: center; padding-inline: 10px; color: #fff; font-family: var(--mono); font-weight: 600; font-size: .9rem; min-width: 0; white-space: nowrap; overflow: hidden; transition: flex-basis .4s; }
+.probbar .pa { background: var(--team-a); }
+.probbar .pb { background: var(--team-b); justify-content: flex-end; }
+input[type="range"] { width: 100%; accent-color: var(--c, var(--accent)); }
+.result-banner { font-family: var(--display); font-size: 1.8rem; font-weight: 800; }
+.scorecard td:first-child { white-space: normal; }
+
+/* Research */
+.prose { display: grid; gap: 12px; max-width: 72ch; }
+.prose p, .prose li { color: var(--ink); }
+.prose ul, .prose ol { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+.prose code, .formula { font-family: var(--mono); font-size: .88rem; background: var(--surface-2); padding: 1px 5px; border-radius: 4px; }
+.formula { display: block; padding: 10px 12px; overflow-x: auto; white-space: pre; }
+.cols-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); gap: 20px; }
+a { color: var(--accent); }
+
+/* Charts */
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.chart text { fill: var(--muted); font-family: var(--mono); font-size: 11px; }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .axis { stroke: var(--muted); stroke-width: 1; }
+.tip { position: fixed; pointer-events: none; background: var(--ink); color: var(--bg); font-family: var(--mono); font-size: .8rem; padding: 6px 9px; border-radius: 6px; z-index: 10; white-space: nowrap; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: .85rem; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+.note { font-size: .85rem; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<header class="board">
+  <div class="wrap">
+    <div class="board-top">
+      <div>
+        <h1>Five-for-Twenty <span>/ cricket fantasy lab</span></h1>
+        <p class="sub">Men's international T20I and ODI players, 2016 to 2026. Pick five players on a $20 budget, draft against a friend, then test how well you and the model predict the result.</p>
+      </div>
+      <div class="tally" aria-label="Pool summary">
+        <div><b id="tPlayers">0</b><small>Players</small></div>
+        <div><b id="tNations">0</b><small>Nations</small></div>
+        <div><b>$20</b><small>Budget</small></div>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="players" aria-selected="true">Players</button>
+      <button role="tab" data-tab="picker" aria-selected="false">$20 Picker</button>
+      <button role="tab" data-tab="h2h" aria-selected="false">2-Player Win Predictor</button>
+      <button role="tab" data-tab="research" aria-selected="false">Research &amp; Eval</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- PLAYERS -->
+  <section class="view" id="view-players">
+    <div class="intro">
+      <h2>Player pool</h2>
+      <p>Approximate international career figures across 2016 to 2026, rounded. Projected points and prices come from the model on the Research tab and change with the format.</p>
+    </div>
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <div class="seg" data-format-toggle></div>
+        <input type="search" id="pSearch" placeholder="Search player" aria-label="Search player">
+        <select id="pRole" aria-label="Role"><option value="">All roles</option><option>BAT</option><option>WK</option><option>AR</option><option>BOWL</option></select>
+        <select id="pCtry" aria-label="Country"><option value="">All nations</option></select>
+        <span class="note" id="pCount"></span>
+      </div>
+      <div class="table-wrap" style="max-height:640px">
+        <table id="pTable"><thead></thead><tbody></tbody></table>
+      </div>
+    </div>
+  </section>
+
+  <!-- PICKER -->
+  <section class="view" id="view-picker" hidden>
+    <div class="intro">
+      <h2>The $20 picker</h2>
+      <p>Fill five positions without going over $20. Prices run from $2 to $7, so you can't afford every star. The report scores your five against the best team the budget allows.</p>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <h3>Your five</h3>
+          <div class="seg" data-format-toggle></div>
+        </div>
+        <div class="budget">
+          <div class="kv"><span class="label">Spent</span><span class="num" id="sSpent">$0.0 / $20</span></div>
+          <div class="meter" id="sMeter"><i style="width:0%"></i></div>
+        </div>
+        <div class="slots" id="sSlots"></div>
+        <div class="row" style="margin-top:14px">
+          <button class="btn ghost" id="sClear">Clear</button>
+          <button class="btn ghost" id="sAuto">Fill with best value</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="row" style="justify-content:space-between;margin-bottom:8px">
+          <h3 id="sListTitle">Choose a player</h3>
+          <input type="search" id="sSearch" placeholder="Search" aria-label="Search players for this slot">
+        </div>
+        <div class="row note" style="margin-bottom:6px;justify-content:space-between"><span>Player</span><span>Proj pts &middot; pts per $ &middot; price</span></div>
+        <div class="plist" id="sList"></div>
+      </div>
+    </div>
+    <div class="card" id="sReport"></div>
+  </section>
+
+  <!-- HEAD TO HEAD -->
+  <section class="view" id="view-h2h" hidden>
+    <div class="intro">
+      <h2>2-player win predictor</h2>
+      <p>Two players snake-draft five each from one shared pool, $20 apiece. Before the match is simulated, each of you says how likely you are to win. The scoreboard tracks the result and how well-calibrated each forecast was, yours and the model's.</p>
+    </div>
+    <div class="card" id="hSetup"></div>
+    <div id="hBody" style="display:grid;gap:20px"></div>
+  </section>
+
+  <!-- RESEARCH -->
+  <section class="view" id="view-research" hidden>
+    <div class="intro">
+      <h2>Research, model and evaluation</h2>
+      <p>How fantasy cricket scores players, how this game prices and simulates them, and how to tell if a win predictor is any good. The evaluation below runs live in your browser.</p>
+    </div>
+    <div class="cols-2">
+      <div class="card prose">
+        <h3>How fantasy cricket works</h3>
+        <p>Daily fantasy games such as Dream11 give each user a fixed credit budget (100 credits for 11 players), price players by expected output, and force role minimums so you can't stack one skill. Your score is the sum of what your players do in the real match.</p>
+        <p>The T20 points table this game borrows from:</p>
+        <ul>
+          <li>Batting: +1 per run, +1 per four, +2 per six; +4 at 30, +8 at 50, +16 at 100; −2 for a duck (not for bowlers).</li>
+          <li>Bowling: +25 per wicket, +8 if bowled or LBW, +4 for 3 wickets, +8 for 4, +16 for 5.</li>
+          <li>Fielding: +8 per catch, +12 per stumping or direct-hit run out.</li>
+        </ul>
+        <p>Five-for-Twenty shrinks this to five positions and $20, keeping the trade-off between stars and value picks.</p>
+      </div>
+      <div class="card prose">
+        <h3>How the model works</h3>
+        <p>Each player gets a per-match simulator built from four career numbers per format: batting average, strike rate, bowling average and economy.</p>
+        <span class="formula">P(bats)   = 0.95 BAT · 0.93 WK · 0.80 AR · 0.30 BOWL (T20)
+runs      ~ Gamma(k=0.9, mean = avg × 0.85)
+boundary  ≈ runs × 0.25 × SR/100   (fours/sixes bonus)
+overs     = 4 BOWL · 3 AR   (ODI: 10 · 7)
+wickets   ~ Poisson(econ × overs / bowl avg)
+catches   ~ Poisson(0.45, keepers 0.9)</span>
+        <p>The projection is the mean of 600 simulated matches. Price is a rank-preserving map of projection onto $2 to $7, in $0.5 steps, separately for T20I and ODI.</p>
+        <p>Win probability for a duel uses a normal approximation: <code>P(A) = Φ((μA − μB) / √(σA² + σB²))</code>, where μ and σ² are summed over each team's five players. A 4,000-match Monte Carlo is shown next to it as a check.</p>
+      </div>
+    </div>
+    <div class="card prose" style="max-width:none">
+      <h3>How to evaluate a win predictor</h3>
+      <div class="cols-2">
+        <div class="prose">
+          <p><b>Score probabilities, not just picks.</b> Accuracy only asks whether the favourite won. Proper scoring rules reward a forecast for being confident when it should be:</p>
+          <ul>
+            <li><b>Brier score</b>: mean of (p − outcome)². 0 is perfect; always saying 50% scores 0.25. Published T20 models land near 0.20 (logistic regression on IPL 2022 reached about 70% accuracy, Brier ≈ 0.20).</li>
+            <li><b>Log loss</b>: −mean of log p(outcome). Punishes confident misses hard; a coin flip scores 0.693.</li>
+            <li><b>Calibration</b>: of all games called at 70%, about 70% should be wins. A reliability diagram plots this; expected calibration error (ECE) is the weighted gap.</li>
+          </ul>
+          <p><b>What the live eval shows.</b> One fantasy match is mostly noise: a single wicket is worth 25 points, so even the best forecaster barely beats 50%. Over a 5- or 10-match series the gap in team quality shows through, and the Brier skill score climbs. That is why the head-to-head game defaults to a 5-match series.</p>
+        </div>
+        <div class="prose">
+          <p><b>Building a real backtest.</b></p>
+          <ol>
+            <li>Data: ball-by-ball files from Cricsheet give every T20I and ODI with player IDs.</li>
+            <li>Split by time. Fit on 2016 to 2022, tune on 2023, test on 2024 onward. Never shuffle matches across years.</li>
+            <li>Rebuild player ratings using only matches before each test game, to avoid leakage.</li>
+            <li>Compare against baselines: coin flip, higher-ranked team, bookmaker odds.</li>
+            <li>For the fantasy side, check Spearman rank correlation between projected and actual points, and the regret of your picked five against the best five in hindsight.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+    <div class="card" id="evalCard">
+      <div class="row" style="justify-content:space-between;margin-bottom:12px">
+        <div>
+          <h3>Live evaluation</h3>
+          <p class="note">Random teams play each other. Each predictor forecasts, then one match is simulated. Seeded, so the same settings give the same numbers. Switch to legal $20 teams to see how close budget-capped duels are.</p>
+        </div>
+        <div class="row">
+          <div class="seg" id="evalFmt"></div>
+          <select id="evalMode" aria-label="Matchups"><option value="any" selected>Any five players</option><option value="cap">Legal $20 teams</option></select>
+          <select id="evalG" aria-label="Series length"><option value="1" selected>1 match</option><option value="5">5-match series</option><option value="10">10-match series</option></select>
+          <select id="evalN" aria-label="Number of matches"><option>200</option><option selected>1000</option><option>2000</option></select>
+          <input type="text" id="evalSeed" value="2026" aria-label="Seed" style="width:80px">
+          <button class="btn" id="evalRun">Run</button>
+        </div>
+      </div>
+      <div class="cols-2">
+        <div class="table-wrap"><table id="evalTable"><thead></thead><tbody></tbody></table>
+          <p class="note" style="margin-top:10px" id="evalNote"></p>
+        </div>
+        <div>
+          <div class="legend" style="margin-bottom:6px"><span><i style="background:var(--accent)"></i>Model (dot size = games in bin)</span><span><i style="background:var(--line)"></i>Perfect calibration</span></div>
+          <div id="evalChart"></div>
+        </div>
+      </div>
+      <p class="note" style="margin-top:12px">This test checks the forecaster against its own simulator. That tells you the maths is calibrated, not that the simulator matches real cricket. Only a Cricsheet backtest can show that.</p>
+    </div>
+    <div class="card prose" style="max-width:none">
+      <h3>Sources</h3>
+      <ul>
+        <li><a href="https://www.sportskeeda.com/cricket/dream11-points-system" target="_blank" rel="noopener">Sportskeeda: Dream11 points system</a></li>
+        <li><a href="https://www.icc-cricket.com/news/a-guide-to-icc-dream11-daily-fantasy-challenge" target="_blank" rel="noopener">ICC: guide to the Dream11 daily fantasy challenge</a></li>
+        <li><a href="https://wsb.wharton.upenn.edu/wp-content/uploads/2025/05/StatsStumps_CricketPrediction.pdf" target="_blank" rel="noopener">Wharton Sports Business: StatsStumps cricket prediction (logistic regression, Brier ≈ 0.20)</a></li>
+        <li><a href="https://salford-repository.worktribe.com/output/1410335/in-play-forecasting-of-win-probability-in-one-day-international-cricket-a-dynamic-logistic-regression-model" target="_blank" rel="noopener">Asif &amp; McHale: in-play ODI win probability, dynamic logistic regression</a></li>
+        <li><a href="https://arxiv.org/pdf/2603.02574" target="_blank" rel="noopener">arXiv: Glicko-based rating system for cricket, Brier-tuned</a></li>
+        <li><a href="https://cricsheet.org" target="_blank" rel="noopener">Cricsheet: open ball-by-ball data for backtesting</a></li>
+      </ul>
+      <p class="note">Player figures are approximate and rounded, compiled for a game rather than for reference. Check ESPNcricinfo or Cricsheet before using them for anything else.</p>
+    </div>
+  </section>
+</main>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+// ---------- Data: [name, nation, role, T20I [bat avg, SR, bowl avg, econ], ODI [...]] (approx., 2016-2026) ----------
+const RAW = [
+  ["Virat Kohli","IND","BAT",[48,137],[58,93]],
+  ["Rohit Sharma","IND","BAT",[32,140],[50,95]],
+  ["Shubman Gill","IND","BAT",[28,140],[58,100]],
+  ["Suryakumar Yadav","IND","BAT",[38,165],[25,105]],
+  ["Shreyas Iyer","IND","BAT",[30,136],[48,100]],
+  ["Yashasvi Jaiswal","IND","BAT",[36,164],null],
+  ["Babar Azam","PAK","BAT",[39,128],[54,88]],
+  ["Fakhar Zaman","PAK","BAT",[23,131],[45,93]],
+  ["Steve Smith","AUS","BAT",[25,125],[43,88]],
+  ["David Warner","AUS","BAT",[33,142],[45,97]],
+  ["Travis Head","AUS","BAT",[30,158],[42,104]],
+  ["Joe Root","ENG","BAT",[35,126],[48,87]],
+  ["Kane Williamson","NZ","BAT",[33,123],[48,81]],
+  ["Glenn Phillips","NZ","BAT",[29,141],[35,108]],
+  ["Rassie van der Dussen","SA","BAT",[33,125],[53,88]],
+  ["Aiden Markram","SA","BAT",[30,147,30,7.8],[38,98,45,5.6]],
+  ["Pathum Nissanka","SL","BAT",[33,128],[42,85]],
+  ["Ibrahim Zadran","AFG","BAT",[30,110],[48,85]],
+  ["Najmul Hossain Shanto","BAN","BAT",[22,115],[33,80]],
+  ["Shimron Hetmyer","WI","BAT",[21,128],[35,103]],
+  ["Jos Buttler","ENG","WK",[35,146],[40,117]],
+  ["Jonny Bairstow","ENG","WK",[27,137],[44,104]],
+  ["Phil Salt","ENG","WK",[35,165],[30,110]],
+  ["Devon Conway","NZ","WK",[38,128],[40,85]],
+  ["Tom Latham","NZ","WK",[21,115],[36,85]],
+  ["Quinton de Kock","SA","WK",[32,138],[46,96]],
+  ["Heinrich Klaasen","SA","WK",[24,142],[43,117]],
+  ["Mohammad Rizwan","PAK","WK",[47,127],[37,88]],
+  ["KL Rahul","IND","WK",[38,139],[49,88]],
+  ["Rishabh Pant","IND","WK",[23,127],[33,106]],
+  ["Sanju Samson","IND","WK",[26,152],[56,99]],
+  ["Shai Hope","WI","WK",[28,135],[50,78]],
+  ["Nicholas Pooran","WI","WK",[26,136],[39,99]],
+  ["Kusal Mendis","SL","WK",[28,135],[34,88]],
+  ["Rahmanullah Gurbaz","AFG","WK",[24,133],[37,90]],
+  ["Litton Das","BAN","WK",[23,124],[32,85]],
+  ["Josh Inglis","AUS","WK",[30,155],[30,100]],
+  ["Hardik Pandya","IND","AR",[27,141,27,8.2],[33,110,36,5.6]],
+  ["Ravindra Jadeja","IND","AR",[22,127,29,7.1],[34,86,37,4.9]],
+  ["Axar Patel","IND","AR",[20,140,25,7.2],[26,92,35,4.6]],
+  ["Ben Stokes","ENG","AR",[21,133,30,8.6],[40,95,40,6.0]],
+  ["Moeen Ali","ENG","AR",[21,140,23,7.8],[25,99,45,5.3]],
+  ["Liam Livingstone","ENG","AR",[25,145,27,8.0],[29,110,40,5.7]],
+  ["Sam Curran","ENG","AR",[17,128,27,8.4],[23,95,40,6.1]],
+  ["Glenn Maxwell","AUS","AR",[29,155,32,7.6],[35,125,48,5.5]],
+  ["Marcus Stoinis","AUS","AR",[28,145,28,8.7],[26,93,44,6.0]],
+  ["Mitchell Marsh","AUS","AR",[30,135,30,8.1],[36,95,38,5.8]],
+  ["Cameron Green","AUS","AR",[25,145,34,8.8],[37,95,38,5.9]],
+  ["Shakib Al Hasan","BAN","AR",[23,121,20,6.8],[37,83,30,4.6]],
+  ["Mehidy Hasan Miraz","BAN","AR",[14,112,27,7.0],[25,80,33,4.8]],
+  ["Mohammad Nabi","AFG","AR",[22,138,26,7.2],[27,86,36,4.3]],
+  ["Azmatullah Omarzai","AFG","AR",[19,128,27,8.4],[38,98,30,5.4]],
+  ["Rachin Ravindra","NZ","AR",[20,125,32,7.3],[42,98,45,5.3]],
+  ["Mitchell Santner","NZ","AR",[16,120,22,7.0],[25,90,40,4.8]],
+  ["Wanindu Hasaranga","SL","AR",[16,125,15,6.9],[20,95,32,5.0]],
+  ["Shadab Khan","PAK","AR",[21,140,22,7.3],[25,90,35,5.2]],
+  ["Andre Russell","WI","AR",[20,165,26,9.1],[27,128,33,5.9]],
+  ["Jason Holder","WI","AR",[16,125,25,8.2],[26,92,36,5.4]],
+  ["Marco Jansen","SA","AR",[18,140,24,8.5],[30,115,30,5.6]],
+  ["Jasprit Bumrah","IND","BOWL",[5,80,17,6.3],[5,60,24,4.6]],
+  ["Mohammed Shami","IND","BOWL",[6,90,29,8.9],[10,85,23,5.6]],
+  ["Mohammed Siraj","IND","BOWL",[5,80,26,8.0],[6,60,25,5.2]],
+  ["Kuldeep Yadav","IND","BOWL",[6,85,14,6.8],[9,70,26,5.0]],
+  ["Arshdeep Singh","IND","BOWL",[6,90,18,8.2],[5,70,23,5.6]],
+  ["Yuzvendra Chahal","IND","BOWL",[3,60,25,8.2],[5,55,27,5.3]],
+  ["Varun Chakaravarthy","IND","BOWL",[4,70,15,6.9],null],
+  ["Rashid Khan","AFG","BOWL",[12,140,14,6.1],[18,105,20,4.2]],
+  ["Mujeeb Ur Rahman","AFG","BOWL",[6,100,20,6.5],[8,90,30,4.4]],
+  ["Fazalhaq Farooqi","AFG","BOWL",[3,70,20,7.5],[3,60,26,5.4]],
+  ["Shaheen Shah Afridi","PAK","BOWL",[12,120,23,7.6],[10,95,24,5.6]],
+  ["Haris Rauf","PAK","BOWL",[5,90,22,8.3],[6,80,27,6.0]],
+  ["Naseem Shah","PAK","BOWL",[8,110,27,7.6],[9,90,22,5.0]],
+  ["Mitchell Starc","AUS","BOWL",[8,110,23,7.6],[11,90,22,5.2]],
+  ["Pat Cummins","AUS","BOWL",[9,120,23,7.5],[13,85,28,5.2]],
+  ["Josh Hazlewood","AUS","BOWL",[3,60,21,7.4],[5,60,26,4.7]],
+  ["Adam Zampa","AUS","BOWL",[5,90,21,7.0],[8,75,28,5.5]],
+  ["Adil Rashid","ENG","BOWL",[6,90,24,7.3],[12,85,33,5.6]],
+  ["Jofra Archer","ENG","BOWL",[8,110,24,7.8],[10,85,27,4.9]],
+  ["Mark Wood","ENG","BOWL",[5,100,23,8.3],[9,85,38,5.6]],
+  ["Trent Boult","NZ","BOWL",[5,90,21,7.8],[10,80,24,5.0]],
+  ["Tim Southee","NZ","BOWL",[8,110,22,8.2],[12,95,32,5.6]],
+  ["Matt Henry","NZ","BOWL",[5,90,25,8.0],[10,90,25,5.3]],
+  ["Lockie Ferguson","NZ","BOWL",[4,90,15,7.3],[5,80,30,5.7]],
+  ["Kagiso Rabada","SA","BOWL",[7,100,27,8.4],[12,90,27,5.1]],
+  ["Anrich Nortje","SA","BOWL",[4,70,17,7.2],[5,60,26,5.5]],
+  ["Tabraiz Shamsi","SA","BOWL",[3,60,22,7.3],[4,60,30,5.4]],
+  ["Keshav Maharaj","SA","BOWL",[8,100,27,7.6],[12,85,32,4.8]],
+  ["Maheesh Theekshana","SL","BOWL",[7,95,25,6.8],[10,80,30,4.9]],
+  ["Dilshan Madushanka","SL","BOWL",[3,60,24,8.5],[4,60,27,6.0]],
+  ["Mustafizur Rahman","BAN","BOWL",[3,70,21,7.6],[4,60,27,5.4]],
+  ["Taskin Ahmed","BAN","BOWL",[5,90,26,7.8],[7,80,31,5.4]],
+  ["Alzarri Joseph","WI","BOWL",[8,110,23,8.7],[9,80,30,5.4]],
+  ["Akeal Hosein","WI","BOWL",[10,110,25,6.9],[10,80,35,4.7]],
+];
+const NATION = {IND:"India",PAK:"Pakistan",AUS:"Australia",ENG:"England",NZ:"New Zealand",SA:"South Africa",WI:"West Indies",SL:"Sri Lanka",AFG:"Afghanistan",BAN:"Bangladesh"};
+const ROLE_NAME = {BAT:"Batter",WK:"Wicketkeeper",AR:"All-rounder",BOWL:"Bowler"};
+const SLOTS = [
+  {key:"top", label:"Top-order batter", roles:["BAT"]},
+  {key:"wk", label:"Wicketkeeper", roles:["WK"]},
+  {key:"ar", label:"All-rounder", roles:["AR"]},
+  {key:"bowl", label:"Strike bowler", roles:["BOWL"]},
+  {key:"flex", label:"Flex (any role)", roles:["BAT","WK","AR","BOWL"]},
+];
+const BUDGET = 20, MINP = 2, MAXP = 7;
+
+// ---------- RNG + samplers ----------
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function hashSeed(s){let h=2166136261;for(const c of String(s)){h^=c.charCodeAt(0);h=Math.imul(h,16777619);}return h>>>0;}
+function normal(r){let u=0,v=0;while(!u)u=r();while(!v)v=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v);}
+function gamma(r,k){ if(k<1){return gamma(r,k+1)*Math.pow(r(),1/k);} const d=k-1/3,c=1/Math.sqrt(9*d); for(;;){let x,v;do{x=normal(r);v=1+c*x;}while(v<=0);v=v*v*v;const u=r();if(u<1-0.0331*x*x*x*x||Math.log(u)<0.5*x*x+d*(1-v+Math.log(v)))return d*v;} }
+function poisson(r,l){const L=Math.exp(-l);let k=0,p=1;do{k++;p*=r();}while(p>L);return k-1;}
+function phi(z){const t=1/(1+0.2316419*Math.abs(z));const d=0.3989423*Math.exp(-z*z/2);let p=d*t*(0.3193815+t*(-0.3565638+t*(1.781478+t*(-1.821256+t*1.330274))));return z>0?1-p:p;}
+
+// ---------- Player model ----------
+const players = RAW.map((r,i)=>({id:i,name:r[0],ctry:r[1],role:r[2],t20:r[3],odi:r[4]}));
+function params(p,f){
+  const a = p[f]; if(!a) return null;
+  const T = f==="t20";
+  const [avg,sr,bavg,econ] = a;
+  const pBat = {BAT:.95,WK:.93,AR:.8,BOWL:T?.3:.45}[p.role];
+  const overs = bavg ? (p.role==="BOWL"?(T?4:10):p.role==="AR"?(T?3:7):(T?1:3)) : 0;
+  return {T,pBat,mean:avg*(T?.85:.9),sr,overs,econ,wk:overs?econ*overs/bavg:0,catchRate:p.role==="WK"?.9:.45,noDuckPenalty:p.role==="BOWL"};
+}
+function simPlayer(pr,r){
+  const o={batted:false,runs:0,wkts:0,catches:0,runsConceded:0,pts:0};
+  if(r()<pr.pBat){
+    o.batted=true;
+    o.runs=Math.round(gamma(r,0.9)*pr.mean/0.9);
+    if(!pr.T) o.runs=Math.min(o.runs,200); else o.runs=Math.min(o.runs,130);
+    o.pts+=o.runs+Math.round(o.runs*0.25*pr.sr/100);
+    if(o.runs>=100)o.pts+=16;else if(o.runs>=50)o.pts+=8;else if(o.runs>=30)o.pts+=4;
+    if(o.runs===0&&!pr.noDuckPenalty)o.pts-=2;
+  }
+  if(pr.overs){
+    o.wkts=Math.min(poisson(r,pr.wk),pr.T?5:7);
+    for(let i=0;i<o.wkts;i++){o.pts+=25;if(r()<.35)o.pts+=8;}
+    if(pr.T){if(o.wkts>=5)o.pts+=16;else if(o.wkts===4)o.pts+=8;else if(o.wkts===3)o.pts+=4;}
+    else{if(o.wkts>=5)o.pts+=8;else if(o.wkts===4)o.pts+=4;}
+    const e=pr.econ*(0.6+0.8*r());
+    o.runsConceded=Math.round(e*pr.overs);
+    const base=pr.T?7.5:5.5;
+    o.pts+=Math.round(Math.max(-4,Math.min(6,(base-e)*2*pr.overs/(pr.T?4:10))));
+  }
+  o.catches=poisson(r,pr.catchRate);
+  o.pts+=o.catches*8;
+  return o;
+}
+// precompute projection (mean, var) per format from 600 seeded sims, then price
+const PROJ = {t20:{},odi:{}};
+for(const f of ["t20","odi"]){
+  const r=mulberry32(hashSeed("proj-"+f));
+  const list=[];
+  for(const p of players){
+    const pr=params(p,f); if(!pr) continue;
+    let s=0,s2=0,N=600;
+    for(let i=0;i<N;i++){const x=simPlayer(pr,r).pts;s+=x;s2+=x*x;}
+    const mean=s/N; PROJ[f][p.id]={pr,mean,var:s2/N-mean*mean};
+    list.push(p.id);
+  }
+  // rank-preserving price: percentile -> $2..$7, steps of 0.5, slight convexity so stars are scarce
+  const sorted=[...list].sort((a,b)=>PROJ[f][a].mean-PROJ[f][b].mean);
+  sorted.forEach((id,i)=>{
+    const q=i/(sorted.length-1);
+    const m=PROJ[f][id].mean, lo=PROJ[f][sorted[0]].mean, hi=PROJ[f][sorted[sorted.length-1]].mean;
+    const blend=0.5*q+0.5*((m-lo)/(hi-lo));
+    PROJ[f][id].price=Math.round((MINP+(MAXP-MINP)*Math.pow(blend,1.15))*2)/2;
+  });
+}
+const proj=(id,f)=>PROJ[f][id];
+const inFmt=(f)=>players.filter(p=>PROJ[f][p.id]);
+
+// ---------- Team helpers ----------
+const teamCost=(t,f)=>t.reduce((s,id)=>s+(id==null?0:proj(id,f).price),0);
+const teamMean=(t,f)=>t.reduce((s,id)=>s+(id==null?0:proj(id,f).mean),0);
+const teamVar=(t,f)=>t.reduce((s,id)=>s+(id==null?0:proj(id,f).var),0);
+function canPick(team,slotIdx,id,f,taken){
+  const p=players[id], P=proj(id,f);
+  if(!P||!SLOTS[slotIdx].roles.includes(p.role)) return false;
+  if(team.includes(id)||(taken&&taken.has(id))) return false;
+  // keep enough money back for the cheapest player still available in every other empty slot
+  let reserve=0;
+  team.forEach((x,i)=>{ if(x!=null||i===slotIdx) return;
+    let m=Infinity; for(const q of inFmt(f)){ if(q.id===id||!SLOTS[i].roles.includes(q.role)||team.includes(q.id)||(taken&&taken.has(q.id))) continue; m=Math.min(m,proj(q.id,f).price); }
+    reserve+=m; });
+  const cur=teamCost(team.map((x,i)=>i===slotIdx?null:x),f);
+  return cur+P.price+reserve<=BUDGET+1e-9;
+}
+// g = series length: totals over g matches, so the mean gap grows with g and the noise with sqrt(g)
+function winProb(a,b,f,g=1){ const d=teamMean(a,f)-teamMean(b,f); const s=Math.sqrt(teamVar(a,f)+teamVar(b,f))||1; return phi(d*Math.sqrt(g)/s); }
+function simTeam(t,f,r){ return t.map(id=>({id,...simPlayer(proj(id,f).pr,r)})); }
+function simSeries(t,f,r,g=1){
+  const agg=t.map(id=>({id,batted:false,runs:0,wkts:0,catches:0,runsConceded:0,pts:0}));
+  for(let k=0;k<g;k++) simTeam(t,f,r).forEach((x,i)=>{const a=agg[i];a.batted=a.batted||x.batted;a.runs+=x.runs;a.wkts+=x.wkts;a.catches+=x.catches;a.runsConceded+=x.runsConceded;a.pts+=x.pts;});
+  return agg;
+}
+const total=s=>s.reduce((a,x)=>a+x.pts,0);
+function mcWin(a,b,f,n,r,g=1){ let w=0; for(let i=0;i<n;i++){const A=total(simSeries(a,f,r,g)),B=total(simSeries(b,f,r,g)); if(A>B)w++; else if(A===B)w+=.5;} return w/n; }
+function optimal(f,taken){
+  // per slot keep the best two players at each price level, then brute-force the combos
+  const cand=SLOTS.map(s=>{
+    const byPrice={};
+    for(const p of inFmt(f)){ if(!s.roles.includes(p.role)||(taken&&taken.has(p.id))) continue; const P=proj(p.id,f); (byPrice[P.price]=byPrice[P.price]||[]).push(p.id); }
+    let out=[]; for(const k in byPrice){ out.push(...byPrice[k].sort((x,y)=>proj(y,f).mean-proj(x,f).mean).slice(0,2)); }
+    // drop dominated: keep only ids where no cheaper-or-equal option has higher mean (keep 2 per frontier step)
+    out.sort((x,y)=>proj(x,f).price-proj(y,f).price||proj(y,f).mean-proj(x,f).mean);
+    const keep=[]; let best1=-1,best2=-1;
+    for(const id of out){const m=proj(id,f).mean; if(m>best2){keep.push(id); if(m>best1){best2=best1;best1=m;} else best2=m;}}
+    return keep;
+  });
+  let best=null,bestV=-1;
+  const pick=[],rec=(i,cost,val)=>{
+    if(i===SLOTS.length){ if(val>bestV){bestV=val;best=[...pick];} return; }
+    for(const id of cand[i]){ const P=proj(id,f); if(pick.includes(id)) continue; if(cost+P.price+MINP*(SLOTS.length-i-1)>BUDGET) continue; pick.push(id); rec(i+1,cost+P.price,val+P.mean); pick.pop(); }
+  };
+  rec(0,0,0);
+  return best;
+}
+const OPT={t20:optimal("t20"),odi:optimal("odi")};
+function anyFive(f,r){
+  const t=[];
+  for(const s of SLOTS){ const opts=inFmt(f).filter(p=>s.roles.includes(p.role)&&!t.includes(p.id)); t.push(opts[Math.floor(r()*opts.length)].id); }
+  return t;
+}
+function randomTeam(f,r){
+  for(let tries=0;tries<50;tries++){
+    const t=[null,null,null,null,null]; let ok=true;
+    for(const si of [0,1,2,3,4].sort(()=>r()-.5)){
+      const opts=inFmt(f).filter(p=>canPick(t,si,p.id,f));
+      if(!opts.length){ok=false;break;}
+      t[si]=opts[Math.floor(r()*opts.length)].id;
+    }
+    if(ok) return t;
+  }
+  return OPT[f];
+}
+
+// ---------- UI helpers ----------
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const money=v=>"$"+v.toFixed(1);
+const fmtName=f=>f==="t20"?"T20I":"ODI";
+let FORMAT="t20";
+try{ const s=localStorage.getItem("f4t-format"); if(s==="odi"||s==="t20") FORMAT=s; }catch(e){}
+const tip=$("#tip");
+function showTip(e,html){tip.innerHTML=html;tip.hidden=false;const x=Math.min(e.clientX+12,innerWidth-tip.offsetWidth-8);tip.style.left=x+"px";tip.style.top=(e.clientY-tip.offsetHeight-10)+"px";}
+function hideTip(){tip.hidden=true;}
+
+function renderFormatToggles(){
+  document.querySelectorAll("[data-format-toggle]").forEach(el=>{
+    el.innerHTML=["t20","odi"].map(f=>`<button aria-pressed="${f===FORMAT}" data-f="${f}">${fmtName(f)}</button>`).join("");
+    el.onclick=e=>{const f=e.target.dataset.f; if(f&&f!==FORMAT) setFormat(f);};
+  });
+}
+function setFormat(f){
+  FORMAT=f; try{localStorage.setItem("f4t-format",f);}catch(e){}
+  // drop picks not available or no longer affordable in the new format
+  solo.team=solo.team.map((id,i)=>id!=null&&proj(id,f)?id:null);
+  while(teamCost(solo.team,f)>BUDGET){ const i=solo.team.findLastIndex(x=>x!=null); solo.team[i]=null; }
+  renderAll();
+}
+
+// ---------- Tabs ----------
+const TABS=["players","picker","h2h","research"];
+function showTab(t){
+  if(!TABS.includes(t)) t="players";
+  document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
+  TABS.forEach(x=>$("#view-"+x).hidden=x!==t);
+  if(location.hash.slice(1)!==t) history.replaceState(null,"","#"+t);
+}
+document.querySelector(".tabs").onclick=e=>{const b=e.target.closest("button");if(b)showTab(b.dataset.tab);};
+
+// ---------- Players table ----------
+const ptState={sort:"mean",asc:false};
+function renderPlayers(){
+  const f=FORMAT, q=$("#pSearch").value.trim().toLowerCase(), role=$("#pRole").value, c=$("#pCtry").value;
+  const cols=[["name","Player"],["ctry","Nation"],["role","Role"],["avg","Bat avg",1],["sr","Strike rate",1],["bavg","Bowl avg",1],["econ","Economy",1],["mean","Proj pts",1],["price","Price",1]];
+  $("#pTable thead").innerHTML="<tr>"+cols.map(([k,l,n])=>`<th class="sortable ${n?"n":""} ${ptState.sort===k?"sorted"+(ptState.asc?" asc":""):""}" data-k="${k}">${l}</th>`).join("")+"</tr>";
+  let rows=inFmt(f).filter(p=>(!q||p.name.toLowerCase().includes(q))&&(!role||p.role===role)&&(!c||p.ctry===c)).map(p=>{const a=p[f],P=proj(p.id,f);return {p,name:p.name,ctry:p.ctry,role:p.role,avg:a[0],sr:a[1],bavg:a[2]??null,econ:a[3]??null,mean:P.mean,price:P.price};});
+  const k=ptState.sort;
+  rows.sort((x,y)=>{const a=x[k],b=y[k]; if(a==null) return 1; if(b==null) return -1; const r=typeof a==="string"?a.localeCompare(b):a-b; return ptState.asc?r:-r;});
+  $("#pTable tbody").innerHTML=rows.map(r=>`<tr><td><b>${esc(r.name)}</b></td><td><span class="ctry" title="${NATION[r.ctry]}">${r.ctry}</span></td><td><span class="role" title="${ROLE_NAME[r.role]}">${r.role}</span></td><td class="n">${r.avg}</td><td class="n">${r.sr}</td><td class="n">${r.bavg??"<span class=muted>–</span>"}</td><td class="n">${r.econ!=null?r.econ.toFixed(1):"<span class=muted>–</span>"}</td><td class="n">${r.mean.toFixed(1)}</td><td class="n price">${money(r.price)}</td></tr>`).join("");
+  $("#pCount").textContent=`${rows.length} players · ${fmtName(f)}`;
+}
+$("#pTable").addEventListener("click",e=>{const th=e.target.closest("th");if(!th)return;const k=th.dataset.k;if(ptState.sort===k)ptState.asc=!ptState.asc;else{ptState.sort=k;ptState.asc=["name","ctry","role","bavg","econ"].includes(k);}renderPlayers();});
+["#pSearch","#pRole","#pCtry"].forEach(s=>$(s).addEventListener("input",renderPlayers));
+$("#pCtry").innerHTML+=Object.keys(NATION).map(k=>`<option value="${k}">${NATION[k]}</option>`).join("");
+
+// ---------- Slots + list (shared by solo and draft) ----------
+function slotsHTML(team,f,active,interactive){
+  return SLOTS.map((s,i)=>{
+    const id=team[i];
+    if(id==null) return `<button class="slot ${i===active?"active":""}" data-slot="${i}" ${interactive?"":"disabled"}><span class="slot-name">${s.label}</span><span class="x muted">empty</span><span class="who muted">Pick a ${s.roles.length>1?"player":ROLE_NAME[s.roles[0]].toLowerCase()}</span></button>`;
+    const p=players[id],P=proj(id,f);
+    return `<button class="slot filled ${i===active?"active":""}" data-slot="${i}" ${interactive?"":"disabled"}><span class="slot-name">${s.label}</span><span class="x price">${money(P.price)}</span><span class="who">${esc(p.name)} <span class="ctry">${p.ctry} · ${p.role}</span></span></button>`;
+  }).join("");
+}
+function listHTML(team,slot,f,q,taken){
+  const s=SLOTS[slot];
+  const opts=inFmt(f).filter(p=>s.roles.includes(p.role)&&(!q||p.name.toLowerCase().includes(q))&&!(taken&&taken.has(p.id)))
+    .sort((a,b)=>proj(b.id,f).mean-proj(a.id,f).mean);
+  if(!opts.length) return `<p class="note" style="padding:12px 4px">No players match.</p>`;
+  return opts.map(p=>{
+    const P=proj(p.id,f), ok=canPick(team,slot,p.id,f,taken)||team[slot]===p.id;
+    return `<button class="prow" data-id="${p.id}" ${ok?"":"disabled"} title="${ok?"Add to "+s.label:"Over budget or already picked"}"><span class="nm">${esc(p.name)} <small>${p.ctry} · ${p.role}</small></span><span class="num">${P.mean.toFixed(0)}</span><span class="num muted">${(P.mean/P.price).toFixed(1)}</span><span class="price">${money(P.price)}</span></button>`;
+  }).join("");
+}
+
+// ---------- Solo picker ----------
+const solo={team:[null,null,null,null,null],active:0};
+function nextEmpty(t,from=0){for(let k=0;k<5;k++){const i=(from+k)%5;if(t[i]==null)return i;}return from;}
+function renderSolo(){
+  const f=FORMAT,t=solo.team,cost=teamCost(t,f);
+  $("#sSpent").textContent=`${money(cost)} / $20`;
+  $("#sMeter").firstElementChild.style.width=Math.min(100,cost/BUDGET*100)+"%";
+  $("#sMeter").classList.toggle("over",cost>BUDGET);
+  $("#sSlots").innerHTML=slotsHTML(t,f,solo.active,true);
+  $("#sListTitle").textContent=SLOTS[solo.active].label;
+  $("#sList").innerHTML=listHTML(t,solo.active,f,$("#sSearch").value.trim().toLowerCase());
+  renderSoloReport();
+}
+$("#sSlots").onclick=e=>{const b=e.target.closest("[data-slot]");if(!b)return;const i=+b.dataset.slot;if(solo.active===i&&solo.team[i]!=null){solo.team[i]=null;}solo.active=i;renderSolo();};
+$("#sList").onclick=e=>{const b=e.target.closest(".prow");if(!b||b.disabled)return;solo.team[solo.active]=+b.dataset.id;solo.active=nextEmpty(solo.team,solo.active);renderSolo();};
+$("#sSearch").addEventListener("input",renderSolo);
+$("#sClear").onclick=()=>{solo.team=[null,null,null,null,null];solo.active=0;renderSolo();};
+$("#sAuto").onclick=()=>{solo.team=[...OPT[FORMAT]];solo.active=0;renderSolo();};
+
+function histogramSVG(values,color,label){
+  const W=640,H=200,ml=40,mr=12,mt=10,mb=34;
+  const lo=Math.floor(Math.min(...values)/20)*20, hi=Math.ceil(Math.max(...values)/20)*20;
+  const nb=Math.max(8,Math.min(28,(hi-lo)/20)), bw=(hi-lo)/nb;
+  const bins=new Array(nb).fill(0); values.forEach(v=>bins[Math.min(nb-1,Math.floor((v-lo)/bw))]++);
+  const mx=Math.max(...bins), yMax=Math.ceil(mx/ (values.length/20))*(values.length/20)||mx;
+  const x=v=>ml+(v-lo)/(hi-lo)*(W-ml-mr), y=c=>mt+(1-c/yMax)*(H-mt-mb);
+  let g=""; const ticks=4;
+  for(let i=0;i<=ticks;i++){const c=yMax*i/ticks;g+=`<line class="grid" x1="${ml}" x2="${W-mr}" y1="${y(c)}" y2="${y(c)}"/><text x="${ml-6}" y="${y(c)+4}" text-anchor="end">${Math.round(c/values.length*100)}%</text>`;}
+  const step=Math.ceil((hi-lo)/6/20)*20;
+  for(let v=lo;v<=hi;v+=step){g+=`<text x="${x(v)}" y="${H-mb+16}" text-anchor="middle">${v}</text>`;}
+  g+=`<text x="${(W+ml)/2}" y="${H-4}" text-anchor="middle">${label}</text>`;
+  bins.forEach((c,i)=>{ if(!c) return; const x0=x(lo+i*bw)+1,x1=x(lo+(i+1)*bw)-1,y0=y(c); g+=`<path d="M${x0},${y(0)} V${y0+3} Q${x0},${y0} ${x0+3},${y0} H${x1-3} Q${x1},${y0} ${x1},${y0+3} V${y(0)} Z" fill="${color}" data-tip="${Math.round(lo+i*bw)}–${Math.round(lo+(i+1)*bw)} pts: ${(c/values.length*100).toFixed(1)}% of matches"/>`; });
+  g+=`<line class="axis" x1="${ml}" x2="${W-mr}" y1="${y(0)}" y2="${y(0)}"/>`;
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Distribution of simulated team points">${g}</svg>`;
+}
+function bindTips(root){root.querySelectorAll("[data-tip]").forEach(el=>{el.addEventListener("mousemove",e=>showTip(e,esc(el.dataset.tip)));el.addEventListener("mouseleave",hideTip);});}
+
+function renderSoloReport(){
+  const f=FORMAT,t=solo.team,el=$("#sReport");
+  const filled=t.filter(x=>x!=null).length, opt=OPT[f], optV=teamMean(opt,f);
+  const optList=opt.map((id,i)=>`<li>${SLOTS[i].label}: <b>${esc(players[id].name)}</b> <span class="ctry">${players[id].ctry}</span> <span class="price">${money(proj(id,f).price)}</span></li>`).join("");
+  if(filled<5){
+    el.innerHTML=`<div class="row" style="justify-content:space-between"><h3>Team report</h3><span class="pill warn">${5-filled} slot${5-filled>1?"s":""} to fill</span></div><p class="note" style="margin-top:6px">Fill all five positions to get your projection, the spread of outcomes and your efficiency against the best possible $20 team in ${fmtName(f)}.</p>`;
+    return;
+  }
+  const mean=teamMean(t,f),eff=mean/optV,r=mulberry32(hashSeed(t.join("-")+f));
+  const sims=[];for(let i=0;i<2000;i++)sims.push(simTeam(t,f,r).reduce((s,x)=>s+x.pts,0));
+  sims.sort((a,b)=>a-b);
+  const p10=sims[200],p90=sims[1800], pr=winProb(t,opt,f);
+  const grade=eff>=.97?["good","Optimal range"]:eff>=.88?["warn","Competitive"]:["bad","Leaves points on the table"];
+  el.innerHTML=`<div class="row" style="justify-content:space-between"><h3>Team report · ${fmtName(f)}</h3><span class="pill ${grade[0]}">${grade[1]}</span></div>
+  <div class="stats" style="margin-block:14px">
+    <div class="stat"><span class="label">Projected</span><b>${mean.toFixed(1)}</b><span class="note">points per match</span></div>
+    <div class="stat"><span class="label">80% range</span><b>${p10}–${p90}</b><span class="note">10th to 90th percentile</span></div>
+    <div class="stat"><span class="label">Efficiency</span><b>${(eff*100).toFixed(1)}%</b><span class="note">of best $20 team (${optV.toFixed(1)})</span></div>
+    <div class="stat"><span class="label">Beats best team</span><b>${(pr*100).toFixed(0)}%</b><span class="note">of head-to-head matches</span></div>
+  </div>
+  <div class="cols-2">
+    <div><p class="label" style="margin-bottom:4px">Simulated team points, 2,000 matches</p><div id="sHist">${histogramSVG(sims,"var(--accent)","team fantasy points")}</div></div>
+    <div class="prose"><p class="label">Best $20 team, ${fmtName(f)}</p><ul>${optList}</ul><p class="note">Found by exhaustive search over every price level. Fantasy points are noisy: even the best team loses to a decent one often.</p></div>
+  </div>`;
+  bindTips(el);
+}
+
+// ---------- Head to head ----------
+const ORDER=[0,1,1,0,0,1,1,0,0,1]; // snake draft
+const h={stage:"setup",names:["Player 1","Player 2"],f:"t20",g:5,relief:[0,0],teams:[[null,null,null,null,null],[null,null,null,null,null]],pick:0,active:0,preds:[50,50],rounds:[],last:null,seed:1};
+function taken(){return new Set([...h.teams[0],...h.teams[1]].filter(x=>x!=null));}
+function needsRelief(k){const t=h.teams[k],tk=taken();return t.every((x,i)=>x!=null||!inFmt(h.f).some(p=>canPick(t,i,p.id,h.f,tk)));}
+function draftList(k,q){
+  const t=h.teams[k],tk=taken();
+  if(!needsRelief(k)) return listHTML(t,h.active,h.f,q,tk);
+  const s=SLOTS[h.active],opts=inFmt(h.f).filter(p=>s.roles.includes(p.role)&&!tk.has(p.id));
+  const m=Math.min(...opts.map(p=>proj(p.id,h.f).price));
+  return opts.filter(p=>proj(p.id,h.f).price===m&&(!q||p.name.toLowerCase().includes(q))).map(p=>{const P=proj(p.id,h.f);return `<button class="prow" data-id="${p.id}" data-relief="1"><span class="nm">${esc(p.name)} <small>${p.ctry} · ${p.role}</small></span><span class="num">${P.mean.toFixed(0)}</span><span class="num muted">${(P.mean/P.price).toFixed(1)}</span><span class="price">${money(P.price)}</span></button>`;}).join("");
+}
+function renderH2H(){
+  const setup=$("#hSetup"),body=$("#hBody");
+  if(h.stage==="setup"){
+    setup.innerHTML=`<h3 style="margin-bottom:10px">New match</h3>
+      <div class="row">
+        <label class="row" style="gap:6px"><span class="label" style="color:var(--team-a)">Player 1</span><input type="text" id="hn0" value="${esc(h.names[0])}" maxlength="18"></label>
+        <label class="row" style="gap:6px"><span class="label" style="color:var(--team-b)">Player 2</span><input type="text" id="hn1" value="${esc(h.names[1])}" maxlength="18"></label>
+        <div class="seg" id="hFmt">${["t20","odi"].map(f=>`<button aria-pressed="${f===h.f}" data-f="${f}">${fmtName(f)}</button>`).join("")}</div>
+        <select id="hG" aria-label="Series length">${[1,5,10].map(g=>`<option value="${g}" ${g===h.g?"selected":""}>${g===1?"Single match":g+"-match series"}</option>`).join("")}</select>
+        <button class="btn" id="hStart">Start draft</button>
+      </div>
+      <p class="note" style="margin-top:8px">Snake order: 1, 2, 2, 1, 1, 2, 2, 1, 1, 2. A player picked by one side is gone for the other. Pass the device between turns. A series adds up fantasy points over several matches, so the better draft wins more often. A single match is close to a coin flip.</p>`;
+    $("#hFmt").onclick=e=>{const f=e.target.dataset.f;if(f){h.f=f;renderH2H();}};
+    $("#hStart").onclick=()=>{h.g=+$("#hG").value;h.relief=[0,0];h.names=[$("#hn0").value.trim()||"Player 1",$("#hn1").value.trim()||"Player 2"];h.teams=[[null,null,null,null,null],[null,null,null,null,null]];h.pick=0;h.active=0;h.stage="draft";h.last=null;renderH2H();};
+    body.innerHTML=h.rounds.length?historyHTML():"";
+    return;
+  }
+  setup.innerHTML=`<div class="row" style="justify-content:space-between"><div class="row"><span class="label">${fmtName(h.f)} · ${h.g===1?"single match":h.g+"-match series"} · ${esc(h.names[0])} vs ${esc(h.names[1])}</span></div><div class="row"><button class="btn ghost" id="hReset">New draft</button></div></div>`;
+  $("#hReset").onclick=()=>{h.stage="setup";renderH2H();};
+  const teamCard=(k)=>{
+    const t=h.teams[k],cost=teamCost(t,h.f);
+    const me=h.stage==="draft"&&ORDER[h.pick]===k;
+    return `<div class="card team ${k?"b":"a"}"><h3><span><span class="dot"></span>${esc(h.names[k])}</span><span class="num" style="font-size:.95rem">${money(cost)} · ${teamMean(t,h.f).toFixed(0)} pts</span></h3>
+      <div class="slots" style="margin-top:10px" data-team="${k}">${slotsHTML(t,h.f,me?h.active:-1,me)}</div></div>`;
+  };
+  let html=`<div class="h2h-teams">${teamCard(0)}${teamCard(1)}</div>`;
+  if(h.stage==="draft"){
+    const k=ORDER[h.pick];
+    html+=`<div class="card team ${k?"b":"a"}"><div class="row" style="justify-content:space-between;margin-bottom:8px"><p class="turn">Pick ${h.pick+1} of 10 · <span class="who">${esc(h.names[k])}</span> picks ${SLOTS[h.active].label.toLowerCase()}</p><input type="search" id="hSearch" placeholder="Search" aria-label="Search players"></div>
+      <div class="row note" style="margin-bottom:6px;justify-content:space-between"><span>Choose a slot in your team above, then a player</span><span>Proj pts · pts per $ · price</span></div>
+      ${needsRelief(k)?`<p class="note" style="margin-bottom:6px"><span class="pill warn">Budget relief</span> No one fits your remaining budget, because a cheap player you were saving for has been taken. You may take the cheapest player left in this slot, even if it puts you over $20.</p>`:""}
+      <div class="plist" id="hList">${draftList(k,"")}</div></div>`;
+  } else if(h.stage==="predict"){
+    html+=`<div class="card"><h3>Lock in your forecasts</h3><p class="note" style="margin-block:4px 14px">Each player sets their own chance of winning. Be honest: the Brier score rewards calibration, not bravado.</p>
+      <div class="h2h-teams">${[0,1].map(k=>`<label class="team ${k?"b":"a"}" style="display:grid;gap:6px;border:0"><span class="label">${esc(h.names[k])}: my chance of winning</span><input type="range" min="1" max="99" value="${h.preds[k]}" id="hp${k}"><b class="num" id="hpv${k}">${h.preds[k]}%</b></label>`).join("")}</div>
+      <div class="row" style="margin-top:14px"><button class="btn" id="hPlay">Reveal model and play the match</button></div></div>`;
+  } else if(h.stage==="result"){
+    html+=resultHTML();
+  }
+  if(h.rounds.length) html+=historyHTML();
+  body.innerHTML=html;
+  bindTips(body);
+  if(h.stage==="draft"){
+    const k=ORDER[h.pick];
+    body.querySelector(`[data-team="${k}"]`).onclick=e=>{const b=e.target.closest("[data-slot]");if(!b)return;const i=+b.dataset.slot;if(h.teams[k][i]!=null)return;h.active=i;renderH2H();};
+    const s=$("#hSearch"); s.oninput=()=>{$("#hList").innerHTML=draftList(k,s.value.trim().toLowerCase());};
+    $("#hList").parentElement.onclick=e=>{const b=e.target.closest(".prow");if(!b||b.disabled)return;
+      if(b.dataset.relief)h.relief[k]++;
+      h.teams[k][h.active]=+b.dataset.id;h.pick++;
+      if(h.pick>=10){h.stage="predict";}
+      else{const nk=ORDER[h.pick];h.active=nextEmpty(h.teams[nk]);
+        // if next drafter can't afford any eligible player in that slot, try other empty slots
+        const t=h.teams[nk];for(let tries=0;tries<5;tries++){const si=h.active;if(inFmt(h.f).some(p=>canPick(t,si,p.id,h.f,taken())))break;h.active=nextEmpty(t,(si+1)%5);}
+      }
+      renderH2H();};
+  }
+  if(h.stage==="predict"){
+    [0,1].forEach(k=>{$("#hp"+k).oninput=e=>{h.preds[k]=+e.target.value;$("#hpv"+k).textContent=h.preds[k]+"%";};});
+    $("#hPlay").onclick=playMatch;
+  }
+  if(h.stage==="result"){
+    $("#hRematch").onclick=()=>{h.stage="predict";renderH2H();};
+    $("#hNew").onclick=()=>{h.stage="setup";renderH2H();};
+  }
+}
+function playMatch(){
+  const [A,B]=h.teams,f=h.f;
+  const g=h.g, pModel=winProb(A,B,f,g);
+  const r=mulberry32(hashSeed(A.join()+"|"+B.join()+"|"+(h.seed++)+"|"+Date.now()));
+  const pMC=mcWin(A,B,f,g>1?1500:4000,r,g);
+  const sa=simSeries(A,f,r,g),sb=simSeries(B,f,r,g);
+  const ta=total(sa),tb=total(sb);
+  const outA=ta>tb?1:ta<tb?0:.5;
+  const pA1=h.preds[0]/100,pA2=1-h.preds[1]/100;
+  const round={n:h.rounds.length+1,f,g,ta,tb,outA,pModel,pMC,pA1,pA2,
+    brier:{p1:(pA1-outA)**2,p2:(pA2-outA)**2,model:(pModel-outA)**2}};
+  h.rounds.push(round);h.last={round,sa,sb};h.stage="result";renderH2H();
+}
+function scorecardHTML(s,k){
+  return `<div class="table-wrap"><table class="scorecard"><thead><tr><th>${esc(h.names[k])}</th><th class="n">Runs</th><th class="n">Wkts</th><th class="n">Ct</th><th class="n">Pts</th></tr></thead><tbody>${s.map(x=>`<tr><td>${esc(players[x.id].name)}</td><td class="n">${x.batted?x.runs:"<span class=muted>dnb</span>"}</td><td class="n">${proj(x.id,h.f).pr.overs?x.wkts+"<span class=muted>/"+x.runsConceded+"</span>":"<span class=muted>–</span>"}</td><td class="n">${x.catches||""}</td><td class="n"><b>${x.pts}</b></td></tr>`).join("")}<tr><td><b>Total</b></td><td></td><td></td><td></td><td class="n"><b>${s.reduce((a,x)=>a+x.pts,0)}</b></td></tr></tbody></table></div>`;
+}
+function resultHTML(){
+  const {round:R,sa,sb}=h.last;
+  const winner=R.outA===1?h.names[0]:R.outA===0?h.names[1]:null;
+  const wc=R.outA===1?"var(--team-a)":"var(--team-b)";
+  const pa=Math.round(R.pModel*100);
+  const rows=[[h.names[0]+" (forecast)",R.pA1,R.brier.p1],[h.names[1]+" (forecast)",R.pA2,R.brier.p2],["Model",R.pModel,R.brier.model]];
+  const bestB=Math.min(...rows.map(r=>r[2]));
+  return `<div class="card"><p class="result-banner" style="color:${winner?wc:"var(--ink)"}">${winner?esc(winner)+" wins":"Tied match"} <span class="num" style="font-size:1.1rem;color:var(--muted)">${R.ta} – ${R.tb}${R.g>1?" over "+R.g+" matches":""}</span></p>
+    <p class="label" style="margin-block:14px 6px">Model's pre-match win probability</p>
+    <div class="probbar" role="img" aria-label="${esc(h.names[0])} ${pa}%, ${esc(h.names[1])} ${100-pa}%"><div class="pa" style="flex-basis:${pa}%">${esc(h.names[0])} ${pa}%</div><div class="pb" style="flex-basis:${100-pa}%">${100-pa}% ${esc(h.names[1])}</div></div>
+    <p class="note" style="margin-top:6px">Normal approximation ${(R.pModel*100).toFixed(1)}% · Monte Carlo, ${R.g>1?"1,500 series":"4,000 matches"}: ${(R.pMC*100).toFixed(1)}% for ${esc(h.names[0])}.${h.relief.some(x=>x)?" Budget relief picks: "+h.relief.join(" / ")+".":""}</p>
+    <div class="cols-2" style="margin-top:16px">${scorecardHTML(sa,0)}${scorecardHTML(sb,1)}</div>
+    <h3 style="margin-block:18px 6px">Forecast scores this match</h3>
+    <div class="table-wrap"><table><thead><tr><th>Forecaster</th><th class="n">P(${esc(h.names[0])} wins)</th><th class="n">Brier</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td class="n">${(r[1]*100).toFixed(0)}%</td><td class="n">${r[2].toFixed(3)}</td><td>${r[2]===bestB?'<span class="pill good">Best</span>':""}</td></tr>`).join("")}</tbody></table></div>
+    <p class="note" style="margin-top:6px">Brier = (forecast − result)². Lower is better; 0.25 is what a 50/50 guess always scores.</p>
+    <div class="row" style="margin-top:14px"><button class="btn" id="hRematch">Rematch, same teams</button><button class="btn ghost" id="hNew">New draft</button></div></div>`;
+}
+function historyHTML(){
+  const R=h.rounds,n=R.length,avg=k=>R.reduce((s,r)=>s+r.brier[k],0)/n;
+  const wins=[R.filter(r=>r.outA===1).length,R.filter(r=>r.outA===0).length];
+  return `<div class="card"><div class="row" style="justify-content:space-between"><h3>Series</h3><span class="label">${n} match${n>1?"es":""}</span></div>
+    <div class="stats" style="margin-block:12px">
+      <div class="stat" style="border-color:var(--team-a)"><span class="label">${esc(h.names[0])}</span><b>${wins[0]} W</b><span class="note">mean Brier ${avg("p1").toFixed(3)}</span></div>
+      <div class="stat" style="border-color:var(--team-b)"><span class="label">${esc(h.names[1])}</span><b>${wins[1]} W</b><span class="note">mean Brier ${avg("p2").toFixed(3)}</span></div>
+      <div class="stat" style="border-color:var(--accent)"><span class="label">Model</span><b>${avg("model").toFixed(3)}</b><span class="note">mean Brier</span></div>
+    </div>
+    <div class="table-wrap"><table><thead><tr><th>#</th><th>Format</th><th class="n">Games</th><th class="n">Score</th><th class="n">Model P(1)</th><th class="n">P1 says</th><th class="n">P2 says</th></tr></thead><tbody>${R.slice().reverse().map(r=>`<tr><td class="num">${r.n}</td><td>${fmtName(r.f)}</td><td class="n">${r.g}</td><td class="n">${r.ta} – ${r.tb}</td><td class="n">${(r.pModel*100).toFixed(0)}%</td><td class="n">${(r.pA1*100).toFixed(0)}%</td><td class="n">${((1-r.pA2)*100).toFixed(0)}%</td></tr>`).join("")}</tbody></table></div></div>`;
+}
+
+// ---------- Evaluation ----------
+let evalFmt="t20";
+function renderEvalFmt(){$("#evalFmt").innerHTML=["t20","odi"].map(f=>`<button aria-pressed="${f===evalFmt}" data-f="${f}">${fmtName(f)}</button>`).join("");}
+$("#evalFmt").onclick=e=>{const f=e.target.dataset.f;if(f){evalFmt=f;renderEvalFmt();runEval();}};
+function runEval(){
+  const f=evalFmt,N=+$("#evalN").value,G=+$("#evalG").value,mode=$("#evalMode").value,r=mulberry32(hashSeed($("#evalSeed").value+"-"+f+"-"+mode+"-"+G));
+  const gen=mode==="cap"?randomTeam:anyFive;
+  // training split: fit the price-only baseline's slope on 400 separate matches (grid search on Brier)
+  const train=[];
+  for(let i=0;i<400;i++){const A=gen(f,r),B=gen(f,r);const ta=total(simSeries(A,f,r,G)),tb=total(simSeries(B,f,r,G));if(ta!==tb)train.push([teamCost(A,f)-teamCost(B,f),ta>tb?1:0]);}
+  let kBest=0,bBest=Infinity;
+  for(let k=0;k<=1.5;k+=0.01){const b=train.reduce((s,[d,o])=>s+(1/(1+Math.exp(-k*d))-o)**2,0);if(b<bBest){bBest=b;kBest=k;}}
+  const preds={model:[],price:[],coin:[]},out=[];
+  for(let i=0;i<N;i++){
+    const A=gen(f,r),B=gen(f,r);
+    const ta=total(simSeries(A,f,r,G)),tb=total(simSeries(B,f,r,G));
+    if(ta===tb){i--;continue;}
+    out.push(ta>tb?1:0);
+    preds.model.push(winProb(A,B,f,G));
+    preds.price.push(1/(1+Math.exp(-kBest*(teamCost(A,f)-teamCost(B,f)))));
+    preds.coin.push(.5);
+  }
+  const clip=p=>Math.min(1-1e-6,Math.max(1e-6,p));
+  const metric=ps=>{let b=0,l=0,a=0;ps.forEach((p,i)=>{b+=(p-out[i])**2;l-=Math.log(clip(out[i]?p:1-p));a+=((p>.5?1:p<.5?0:.5)===out[i]?1:p===.5?.5:0);});return{brier:b/N,ll:l/N,acc:a/N};};
+  // reliability bins for the model
+  const bins=Array.from({length:10},()=>({n:0,p:0,o:0}));
+  preds.model.forEach((p,i)=>{const k=Math.min(9,Math.floor(p*10));bins[k].n++;bins[k].p+=p;bins[k].o+=out[i];});
+  const ece=bins.reduce((s,b)=>s+(b.n?b.n/N*Math.abs(b.p/b.n-b.o/b.n):0),0);
+  const M={model:metric(preds.model),price:metric(preds.price),coin:metric(preds.coin)};
+  const best=k=>Math.min(M.model[k],M.price[k],M.coin[k]);
+  const row=(name,m,desc)=>`<tr><td><b>${name}</b><br><span class="note">${desc}</span></td><td class="n">${m.brier.toFixed(3)}${m.brier===best("brier")?" ✓":""}</td><td class="n">${m.ll.toFixed(3)}</td><td class="n">${(m.acc*100).toFixed(1)}%</td></tr>`;
+  $("#evalTable thead").innerHTML=`<tr><th>Predictor</th><th class="n">Brier ↓</th><th class="n">Log loss ↓</th><th class="n">Accuracy ↑</th></tr>`;
+  $("#evalTable tbody").innerHTML=row("Model",M.model,"normal approx. on summed projections")+row("Price only",M.price,`logistic on price gap, slope ${kBest.toFixed(2)} fit on 400 training matches`)+row("Coin flip",M.coin,"always 50%");
+  $("#evalNote").innerHTML=`${N.toLocaleString()} test ${G>1?G+"-match series":"matches"}, ${fmtName(f)}, ${mode==="cap"?"legal $20 teams":"any five players"}. Model expected calibration error: <b class="num">${(ece*100).toFixed(1)} pts</b>. Brier skill vs coin flip: <b class="num">${((1-M.model.brier/.25)*100).toFixed(1)}%</b>.`;
+  $("#evalChart").innerHTML=reliabilitySVG(bins,N);
+  bindTips($("#evalChart"));
+}
+function reliabilitySVG(bins,N){
+  const W=360,H=330,ml=44,mr=14,mt=12,mb=44,x=v=>ml+v*(W-ml-mr),y=v=>mt+(1-v)*(H-mt-mb);
+  let g="";
+  for(let i=0;i<=5;i++){const v=i/5;g+=`<line class="grid" x1="${ml}" x2="${W-mr}" y1="${y(v)}" y2="${y(v)}"/><text x="${ml-6}" y="${y(v)+4}" text-anchor="end">${v*100}%</text><text x="${x(v)}" y="${H-mb+16}" text-anchor="middle">${v*100}%</text>`;}
+  g+=`<line x1="${x(0)}" y1="${y(0)}" x2="${x(1)}" y2="${y(1)}" stroke="var(--line)" stroke-width="2" stroke-dasharray="5 4"/>`;
+  g+=`<text x="${(W+ml)/2}" y="${H-6}" text-anchor="middle">forecast win probability</text><text transform="translate(12 ${(H-mb+mt)/2}) rotate(-90)" text-anchor="middle">observed win rate</text>`;
+  const pts=bins.map(b=>b.n?{p:b.p/b.n,o:b.o/b.n,n:b.n}:null).filter(Boolean);
+  g+=`<polyline points="${pts.map(q=>x(q.p)+","+y(q.o)).join(" ")}" fill="none" stroke="var(--accent)" stroke-width="2"/>`;
+  const mx=Math.max(...pts.map(q=>q.n));
+  pts.forEach(q=>{g+=`<circle cx="${x(q.p)}" cy="${y(q.o)}" r="${5+7*Math.sqrt(q.n/mx)}" fill="var(--accent)" stroke="var(--surface)" stroke-width="2" data-tip="Forecast ${(q.p*100).toFixed(0)}% → won ${(q.o*100).toFixed(0)}% (${q.n} games)"/>`;});
+  return `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Reliability diagram of model win probabilities">${g}</svg>`;
+}
+$("#evalRun").onclick=runEval;
+$("#evalMode").onchange=runEval;$("#evalG").onchange=runEval;
+
+// ---------- Boot ----------
+function renderAll(){renderFormatToggles();renderPlayers();renderSolo();}
+function start(){
+  $("#tPlayers").textContent=players.length;
+  $("#tNations").textContent=Object.keys(NATION).length;
+  // open the picker with a realistic example team so the report shows something
+  solo.team=[...OPT[FORMAT]]; solo.team[4]=null; solo.active=4;
+  renderAll(); renderH2H(); renderEvalFmt(); runEval();
+  showTab(location.hash.slice(1)||"players");
+}
+start();
+</script>
