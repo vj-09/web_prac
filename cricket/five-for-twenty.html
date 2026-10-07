@@ -147,6 +147,110 @@ input[type="range"] { width: 100%; accent-color: var(--c, var(--accent)); }
 .result-banner { font-family: var(--display); font-size: 1.8rem; font-weight: 800; }
 .scorecard td:first-child { white-space: normal; }
 
+/* Auction duel */
+:root { --card-bg: #FFFFFF; --r-bat: #A87410; --r-wk: #6A4C9C; --r-ar: #1E6A48; --r-bowl: #2A7480; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --card-bg: #1B2824; --r-bat: #E0A93A; --r-wk: #A48AD6; --r-ar: #5CC08A; --r-bowl: #4FB3BF; } }
+:root[data-theme="dark"] { --card-bg: #1B2824; --r-bat: #E0A93A; --r-wk: #A48AD6; --r-ar: #5CC08A; --r-bowl: #4FB3BF; }
+.duel-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 360px); gap: 28px; align-items: center; }
+@media (max-width: 760px) { .duel-hero { grid-template-columns: minmax(0, 1fr); } }
+.opt-grid { display: grid; gap: 14px; }
+.rules { margin: 0; padding-left: 1.1em; display: grid; gap: 3px; }
+.fan { position: relative; height: 290px; display: flex; justify-content: center; align-items: center; }
+.fan .pcard { position: absolute; width: 160px; transform-origin: 50% 115%; transition: transform .45s cubic-bezier(.3,.7,.3,1); }
+.fan .pcard:nth-child(1) { transform: rotate(-13deg) translateX(-58px); }
+.fan .pcard:nth-child(2) { transform: translateY(-12px); z-index: 1; }
+.fan .pcard:nth-child(3) { transform: rotate(13deg) translateX(58px); }
+.fan:hover .pcard:nth-child(1) { transform: rotate(-19deg) translateX(-88px); }
+.fan:hover .pcard:nth-child(3) { transform: rotate(19deg) translateX(88px); }
+
+.pcard { container-type: inline-size; perspective: 900px; aspect-ratio: 5 / 7; width: 100%; max-width: 100%; --rc: var(--r-bat); position: relative; }
+.pcard[data-role="WK"] { --rc: var(--r-wk); }
+.pcard[data-role="AR"] { --rc: var(--r-ar); }
+.pcard[data-role="BOWL"] { --rc: var(--r-bowl); }
+.pc-inner { position: relative; width: 100%; height: 100%; transition: transform .6s cubic-bezier(.3,.7,.3,1); transform-style: preserve-3d; }
+.pcard.down .pc-inner { transform: rotateY(180deg); }
+.pc-front, .pc-back { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 9px; overflow: hidden; }
+.pc-front { background: var(--card-bg); border: 1px solid var(--line); border-top: 5cqw solid var(--rc); display: flex; flex-direction: column; gap: 3cqw; padding: 6cqw 7cqw; box-shadow: 0 2px 8px rgba(10, 30, 20, .10); }
+.pc-top { display: flex; justify-content: space-between; gap: 4px; font-family: var(--mono); font-size: 7.5cqw; color: var(--muted); }
+.pc-role { font-family: var(--display); text-transform: uppercase; letter-spacing: .06em; color: var(--rc); font-weight: 700; }
+.pc-name { font-family: var(--display); font-weight: 800; font-size: 13cqw; line-height: 1; color: var(--ink); flex: 1; text-wrap: balance; overflow-wrap: anywhere; }
+.pc-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 2cqw 4cqw; }
+.pc-stats span { display: block; color: var(--muted); font-family: var(--display); text-transform: uppercase; letter-spacing: .05em; font-size: 6.5cqw; line-height: 1.1; }
+.pc-stats b { font-family: var(--mono); font-weight: 600; font-size: 8.5cqw; color: var(--ink); }
+.pc-foot { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); padding-top: 3cqw; font-size: 8cqw; }
+.pc-foot small { color: var(--muted); font-family: var(--display); text-transform: uppercase; letter-spacing: .05em; }
+.pc-foot b { font-family: var(--mono); }
+.pc-base { font-family: var(--mono); font-weight: 600; background: var(--surface-2); padding: .5cqw 4cqw; border-radius: 99px; }
+.pc-back { transform: rotateY(180deg); background: radial-gradient(circle at 35% 28%, #CF4B3E, #8E1B17 72%); border: 1px solid #6E1411; display: grid; place-items: center; }
+.pc-back::before, .pc-back::after { content: ""; position: absolute; top: -18%; bottom: -18%; width: 90%; border-radius: 50%; border: 2px dashed rgba(255, 238, 226, .75); }
+.pc-back::before { left: -64%; }
+.pc-back::after { right: -64%; }
+.pc-back span { font-family: var(--display); font-weight: 800; color: rgba(255, 238, 226, .92); font-size: 15cqw; letter-spacing: .06em; }
+.pc-pts { position: absolute; left: 0; right: 0; bottom: 0; background: var(--c, var(--accent)); color: #fff; padding: 4cqw 7cqw; display: grid; transform: translateY(102%); transition: transform .4s cubic-bezier(.2,1.3,.4,1); }
+.pcard.scored .pc-pts { transform: none; }
+.pc-pts b { font-family: var(--mono); font-size: 15cqw; line-height: 1; }
+.pc-pts span { font-size: 6.5cqw; opacity: .92; }
+
+.arena { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 1fr); grid-template-areas: "a s b"; gap: 16px; align-items: start; }
+@media (max-width: 960px) { .arena { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "s s" "a b"; } }
+@media (max-width: 520px) { .arena { grid-template-columns: minmax(0, 1fr); grid-template-areas: "s" "a" "b"; } }
+.purse.a { grid-area: a; }
+.purse.b { grid-area: b; }
+.purse { transition: box-shadow .3s; }
+.purse.turn { box-shadow: 0 0 0 2px var(--c), 0 10px 26px color-mix(in srgb, var(--c) 22%, transparent); }
+.purse .big { font-family: var(--mono); font-size: 2rem; font-weight: 600; line-height: 1.1; }
+.roster { display: grid; gap: 4px; margin-top: 12px; }
+.roster > div { display: flex; justify-content: space-between; gap: 8px; padding: 5px 8px; border-radius: 6px; background: var(--surface-2); font-size: .9rem; min-width: 0; }
+.roster > div > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.roster .empty { background: transparent; border: 1px dashed var(--line); color: var(--muted); }
+.roster .new { animation: pop .45s cubic-bezier(.2,1.4,.4,1); }
+.stage-card { grid-area: s; }
+.stage { display: grid; grid-template-columns: minmax(0, 200px) minmax(0, 1fr); gap: 20px; align-items: center; }
+@media (max-width: 440px) { .stage { grid-template-columns: minmax(0, 140px) minmax(0, 1fr); gap: 12px; } }
+.lot-wrap { position: relative; }
+.lot-wrap .pcard.enter { animation: lotIn .5s cubic-bezier(.2,.9,.3,1.1); }
+@keyframes lotIn { from { transform: translateY(40px) rotate(-8deg); opacity: 0; } }
+.bidnum { font-family: var(--mono); font-size: 2.6rem; font-weight: 600; line-height: 1; display: inline-block; }
+.bidnum.a { color: var(--team-a); }
+.bidnum.b { color: var(--team-b); }
+.bidnum.bump { animation: bump .4s; }
+@keyframes bump { 40% { transform: scale(1.22); } }
+.stamp { position: absolute; left: -8%; right: -8%; top: 34%; display: grid; place-items: center; text-align: center; font-family: var(--display); font-weight: 800; font-size: 2.1rem; letter-spacing: .1em; line-height: 1; padding: 8px 4px; border: 4px solid var(--c); color: var(--c); background: color-mix(in srgb, var(--surface) 88%, transparent); border-radius: 8px; transform: rotate(-12deg); animation: stamp .45s cubic-bezier(.2,1.6,.4,1); }
+.stamp small { font-size: .8rem; letter-spacing: .04em; margin-top: 4px; }
+.stamp.a { --c: var(--team-a); }
+.stamp.b { --c: var(--team-b); }
+.stamp.none { --c: var(--muted); }
+@keyframes stamp { from { transform: rotate(-12deg) scale(2.4); opacity: 0; } }
+@keyframes pop { from { transform: scale(.8); opacity: 0; } }
+.thinking::after { content: ""; animation: dots 1.2s steps(4) infinite; }
+@keyframes dots { 0% { content: ""; } 25% { content: "."; } 50% { content: ".."; } 75% { content: "..."; } }
+.log { font-size: .85rem; color: var(--muted); display: grid; gap: 2px; }
+.log span:first-child { color: var(--ink); }
+.catalogue { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 12px; }
+.catalogue .pcard { transition: transform .3s; }
+.catalogue .pcard.on-block { transform: translateY(-8px); }
+.catalogue .pcard.on-block .pc-front { outline: 3px solid var(--accent); outline-offset: 2px; }
+.pcard.sold-a { --c: var(--team-a); }
+.pcard.sold-b { --c: var(--team-b); }
+.pcard.sold .pc-front > * { opacity: .35; }
+.pcard.sold .pc-front::after { content: attr(data-badge); position: absolute; left: -4%; right: -4%; top: 40%; text-align: center; background: var(--c); color: #fff; font-family: var(--display); font-weight: 800; letter-spacing: .04em; font-size: 9cqw; padding: 2cqw 0; transform: rotate(-8deg); }
+.pcard.unsold .pc-front { filter: grayscale(1); opacity: .5; }
+.bin-pick { cursor: pointer; }
+.bin-pick:hover .pc-front, .bin-pick:focus-visible .pc-front { outline: 3px solid var(--accent); outline-offset: 2px; }
+.shoe { position: relative; width: 130px; aspect-ratio: 5 / 7; margin: 10px auto; }
+.shoe .pcard { position: absolute; inset: 0; }
+.shoe .pcard:nth-child(2) { transform: translate(2px, -2px); }
+.shoe .pcard:nth-child(3) { transform: translate(4px, -4px); }
+.shoe.riffle .pcard:nth-child(odd) { animation: riffL .3s ease-in-out 4 alternate; }
+.shoe.riffle .pcard:nth-child(even) { animation: riffR .3s ease-in-out 4 alternate; }
+@keyframes riffL { to { transform: translateX(-52px) rotate(-11deg); } }
+@keyframes riffR { to { transform: translateX(52px) rotate(11deg); } }
+.duel-teams { display: grid; gap: 18px; }
+.match-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin-top: 10px; }
+@media (max-width: 560px) { .match-row { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.total { font-family: var(--mono); font-size: 2rem; font-weight: 600; color: var(--c); }
+.result-banner { animation: pop .5s cubic-bezier(.2,1.4,.4,1); }
+
 /* Research */
 .prose { display: grid; gap: 12px; max-width: 72ch; }
 .prose p, .prose li { color: var(--ink); }
@@ -173,7 +277,7 @@ a { color: var(--accent); }
     <div class="board-top">
       <div>
         <h1>Five-for-Twenty <span>/ cricket fantasy lab</span></h1>
-        <p class="sub">Men's international T20I and ODI players, 2016 to 2026. Pick five players on a $20 budget, draft against a friend, then test how well you and the model predict the result.</p>
+        <p class="sub">Men's international T20I and ODI players, 2016 to 2026. Pick five players on a $20 budget, bid against a friend or the computer in a card auction, then test how well you and the model predict the result.</p>
       </div>
       <div class="tally" aria-label="Pool summary">
         <div><b id="tPlayers">0</b><small>Players</small></div>
@@ -184,7 +288,7 @@ a { color: var(--accent); }
     <nav class="tabs" role="tablist">
       <button role="tab" data-tab="players" aria-selected="true">Players</button>
       <button role="tab" data-tab="picker" aria-selected="false">$20 Picker</button>
-      <button role="tab" data-tab="h2h" aria-selected="false">2-Player Win Predictor</button>
+      <button role="tab" data-tab="auction" aria-selected="false">Auction Duel</button>
       <button role="tab" data-tab="research" aria-selected="false">Research &amp; Eval</button>
     </nav>
   </div>
@@ -245,14 +349,13 @@ a { color: var(--accent); }
     <div class="card" id="sReport"></div>
   </section>
 
-  <!-- HEAD TO HEAD -->
-  <section class="view" id="view-h2h" hidden>
+  <!-- AUCTION DUEL -->
+  <section class="view" id="view-auction" hidden>
     <div class="intro">
-      <h2>2-player win predictor</h2>
-      <p>Two players snake-draft five each from one shared pool, $20 apiece. Before the match is simulated, each of you says how likely you are to win. The scoreboard tracks the result and how well-calibrated each forecast was, yours and the model's.</p>
+      <h2>Auction Duel</h2>
+      <p>A shuffled deck, twelve players under the hammer and $20 each. Buy five, forecast the result, then watch the cards play it out.</p>
     </div>
-    <div class="card" id="hSetup"></div>
-    <div id="hBody" style="display:grid;gap:20px"></div>
+    <div id="duel" style="display:grid;gap:20px"></div>
   </section>
 
   <!-- RESEARCH -->
@@ -296,7 +399,7 @@ catches   ~ Poisson(0.45, keepers 0.9)</span>
             <li><b>Log loss</b>: −mean of log p(outcome). Punishes confident misses hard; a coin flip scores 0.693.</li>
             <li><b>Calibration</b>: of all games called at 70%, about 70% should be wins. A reliability diagram plots this; expected calibration error (ECE) is the weighted gap.</li>
           </ul>
-          <p><b>What the live eval shows.</b> One fantasy match is mostly noise: a single wicket is worth 25 points, so even the best forecaster barely beats 50%. Over a 5- or 10-match series the gap in team quality shows through, and the Brier skill score climbs. That is why the head-to-head game defaults to a 5-match series.</p>
+          <p><b>What the live eval shows.</b> One fantasy match is mostly noise: a single wicket is worth 25 points, so even the best forecaster barely beats 50%. Over a 5- or 10-match series the gap in team quality shows through, and the Brier skill score climbs. That is why Auction Duel defaults to a 5-match series.</p>
         </div>
         <div class="prose">
           <p><b>Building a real backtest.</b></p>
@@ -421,6 +524,18 @@ const RAW = [
   ["Arshdeep Singh","IND","BOWL",[6,90,18,8.2],[5,70,23,5.6]],
   ["Yuzvendra Chahal","IND","BOWL",[3,60,25,8.2],[5,55,27,5.3]],
   ["Varun Chakaravarthy","IND","BOWL",[4,70,15,6.9],null],
+  ["Shikhar Dhawan","IND","BAT",[27,126],[44,93]],
+  ["Tilak Varma","IND","BAT",[45,150],[19,82]],
+  ["Rinku Singh","IND","BAT",[44,162],[27,95]],
+  ["Abhishek Sharma","IND","BAT",[35,190,30,8.5],null],
+  ["Ishan Kishan","IND","WK",[25,124],[43,102]],
+  ["Washington Sundar","IND","AR",[18,125,24,7.0],[30,90,38,5.0]],
+  ["Shivam Dube","IND","AR",[28,140,30,9.0],null],
+  ["Nitish Kumar Reddy","IND","AR",[30,150,30,9.5],null],
+  ["Ravichandran Ashwin","IND","BOWL",[12,120,24,6.9],[16,85,40,4.9]],
+  ["Bhuvneshwar Kumar","IND","BOWL",[11,110,24,7.0],[14,85,34,5.1]],
+  ["Ravi Bishnoi","IND","BOWL",[5,80,20,7.3],null],
+  ["Harshit Rana","IND","BOWL",[5,90,25,9.0],[8,80,24,6.0]],
   ["Rashid Khan","AFG","BOWL",[12,140,14,6.1],[18,105,20,4.2]],
   ["Mujeeb Ur Rahman","AFG","BOWL",[6,100,20,6.5],[8,90,30,4.4]],
   ["Fazalhaq Farooqi","AFG","BOWL",[3,70,20,7.5],[3,60,26,5.4]],
@@ -617,8 +732,9 @@ function setFormat(f){
 }
 
 // ---------- Tabs ----------
-const TABS=["players","picker","h2h","research"];
+const TABS=["players","picker","auction","research"];
 function showTab(t){
+  if(t==="h2h") t="auction";
   if(!TABS.includes(t)) t="players";
   document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===t));
   TABS.forEach(x=>$("#view-"+x).hidden=x!==t);
@@ -726,126 +842,335 @@ function renderSoloReport(){
   bindTips(el);
 }
 
-// ---------- Head to head ----------
-const ORDER=[0,1,1,0,0,1,1,0,0,1]; // snake draft
-const h={stage:"setup",names:["Player 1","Player 2"],f:"t20",g:5,relief:[0,0],teams:[[null,null,null,null,null],[null,null,null,null,null]],pick:0,active:0,preds:[50,50],rounds:[],last:null,seed:1};
-function taken(){return new Set([...h.teams[0],...h.teams[1]].filter(x=>x!=null));}
-function needsRelief(k){const t=h.teams[k],tk=taken();return t.every((x,i)=>x!=null||!inFmt(h.f).some(p=>canPick(t,i,p.id,h.f,tk)));}
-function draftList(k,q){
-  const t=h.teams[k],tk=taken();
-  if(!needsRelief(k)) return listHTML(t,h.active,h.f,q,tk);
-  const s=SLOTS[h.active],opts=inFmt(h.f).filter(p=>s.roles.includes(p.role)&&!tk.has(p.id));
-  const m=Math.min(...opts.map(p=>proj(p.id,h.f).price));
-  return opts.filter(p=>proj(p.id,h.f).price===m&&(!q||p.name.toLowerCase().includes(q))).map(p=>{const P=proj(p.id,h.f);return `<button class="prow" data-id="${p.id}" data-relief="1"><span class="nm">${esc(p.name)} <small>${p.ctry} · ${p.role}</small></span><span class="num">${P.mean.toFixed(0)}</span><span class="num muted">${(P.mean/P.price).toFixed(1)}</span><span class="price">${money(P.price)}</span></button>`;}).join("");
+// ---------- Auction duel ----------
+const SQUAD=5,PURSE=20,DEAL_N=12;
+const REDUCED=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const wait=ms=>new Promise(r=>setTimeout(r,REDUCED?Math.min(ms,40):ms));
+const r2=x=>Math.round(x*2)/2;
+const A={stage:"setup",names:["You","Computer"],ai:true,pool:"IND",f:"t20",g:5,deck:[],li:0,lot:null,teams:[[],[]],purse:[PURSE,PURSE],paid:{},unsold:[],bin:[],log:[],preds:[50,50],rounds:[],last:null,rng:mulberry32((Date.now()%1e9)>>>0),tok:0,lcLast:1,justAdded:null};
+const basePrice=(id,f=A.f)=>Math.max(1,r2((proj(id,f).price-1)*0.6));
+const need=k=>SQUAD-A.teams[k].length;
+const maxBid=k=>r2(A.purse[k]-(need(k)-1));
+const isAI=k=>A.ai&&k===1;
+function shuffleArr(a,r){for(let i=a.length-1;i>0;i--){const j=Math.floor(r()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+const poolIds=()=>inFmt(A.f).filter(p=>A.pool==="ALL"||p.ctry===A.pool).map(p=>p.id);
+const pid=name=>players.find(p=>p.name===name).id;
+function log(msg){A.log.push(msg);}
+// "You open" vs "Computer opens"
+const says=(k,third,base)=>`${esc(A.names[k])} ${A.names[k]==="You"?base:third}`;
+
+function cardHTML(id,{down=false,f=A.f,cls="",extra=""}={}){
+  const p=players[id],P=proj(id,f),a=p[f];
+  const bowl=a[2]?`<div><span>Bowl avg</span><b>${a[2]}</b></div><div><span>Econ</span><b>${a[3].toFixed(1)}</b></div>`:`<div><span>Bowl avg</span><b>–</b></div><div><span>Econ</span><b>–</b></div>`;
+  return `<div class="pcard ${down?"down":""} ${cls}" data-id="${id}" data-role="${p.role}" ${cls.includes("bin-pick")?'tabindex="0" role="button" aria-label="Take '+esc(p.name)+'"':""}><div class="pc-inner"><div class="pc-front"><div class="pc-top"><span>${p.ctry}</span><span class="pc-role">${ROLE_NAME[p.role]}</span></div><div class="pc-name">${esc(p.name)}</div><div class="pc-stats"><div><span>Bat avg</span><b>${a[0]}</b></div><div><span>SR</span><b>${a[1]}</b></div>${bowl}</div><div class="pc-foot"><span><small>Proj</small> <b>${P.mean.toFixed(0)}</b></span><span class="pc-base">${money(basePrice(id,f))}</span></div>${extra}</div><div class="pc-back"><span>F4T</span></div></div></div>`;
 }
-function renderH2H(){
-  const setup=$("#hSetup"),body=$("#hBody");
-  if(h.stage==="setup"){
-    setup.innerHTML=`<h3 style="margin-bottom:10px">New match</h3>
+function segHTML(id,opts,cur){return `<div class="seg" id="${id}">${opts.map(([v,l])=>`<button aria-pressed="${v===cur}" data-v="${v}">${l}</button>`).join("")}</div>`;}
+function countUp(el,from,to,ms){
+  if(REDUCED){el.textContent=to;return;}
+  const t0=performance.now();
+  const step=t=>{const q=Math.min(1,(t-t0)/ms);el.textContent=Math.round(from+(to-from)*(1-Math.pow(1-q,3)));if(q<1)requestAnimationFrame(step);};
+  requestAnimationFrame(step);
+}
+
+// ----- setup -----
+function renderDuel(){
+  if(A.stage==="setup") return renderSetup();
+  if(A.stage==="predict") return renderPredict();
+}
+function renderSetup(){
+  A.tok++;
+  const el=$("#duel");
+  el.innerHTML=`<div class="card duel-hero">
+    <div class="opt-grid">
+      <h3 style="font-size:1.7rem">Shuffle, deal, bid</h3>
+      <p class="muted">Twelve cards come off a shuffled deck. Each lot goes under the hammer in turn. Open at the base price, raise, or pass. You have $20 and five empty slots.</p>
+      <div class="row">${segHTML("dOpp",[["ai","vs Computer"],["friend","vs a friend"]],A.ai?"ai":"friend")}${segHTML("dPool",[["IND","India only"],["ALL","All nations"]],A.pool)}</div>
+      <div class="row">${segHTML("dFmt",[["t20","T20I"],["odi","ODI"]],A.f)}
+        <select id="dG" aria-label="Series length">${[1,5,10].map(g=>`<option value="${g}" ${g===A.g?"selected":""}>${g===1?"Single match":g+"-match series"}</option>`).join("")}</select></div>
       <div class="row">
-        <label class="row" style="gap:6px"><span class="label" style="color:var(--team-a)">Player 1</span><input type="text" id="hn0" value="${esc(h.names[0])}" maxlength="18"></label>
-        <label class="row" style="gap:6px"><span class="label" style="color:var(--team-b)">Player 2</span><input type="text" id="hn1" value="${esc(h.names[1])}" maxlength="18"></label>
-        <div class="seg" id="hFmt">${["t20","odi"].map(f=>`<button aria-pressed="${f===h.f}" data-f="${f}">${fmtName(f)}</button>`).join("")}</div>
-        <select id="hG" aria-label="Series length">${[1,5,10].map(g=>`<option value="${g}" ${g===h.g?"selected":""}>${g===1?"Single match":g+"-match series"}</option>`).join("")}</select>
-        <button class="btn" id="hStart">Start draft</button>
+        <label class="row" style="gap:6px"><span class="label" style="color:var(--team-a)">Player 1</span><input type="text" id="dn0" value="${esc(A.names[0])}" maxlength="16" style="width:130px"></label>
+        ${A.ai?"":`<label class="row" style="gap:6px"><span class="label" style="color:var(--team-b)">Player 2</span><input type="text" id="dn1" value="${esc(A.names[1]==="Computer"?"Player 2":A.names[1])}" maxlength="16" style="width:130px"></label>`}
       </div>
-      <p class="note" style="margin-top:8px">Snake order: 1, 2, 2, 1, 1, 2, 2, 1, 1, 2. A player picked by one side is gone for the other. Pass the device between turns. A series adds up fantasy points over several matches, so the better draft wins more often. A single match is close to a coin flip.</p>`;
-    $("#hFmt").onclick=e=>{const f=e.target.dataset.f;if(f){h.f=f;renderH2H();}};
-    $("#hStart").onclick=()=>{h.g=+$("#hG").value;h.relief=[0,0];h.names=[$("#hn0").value.trim()||"Player 1",$("#hn1").value.trim()||"Player 2"];h.teams=[[null,null,null,null,null],[null,null,null,null,null]];h.pick=0;h.active=0;h.stage="draft";h.last=null;renderH2H();};
-    body.innerHTML=h.rounds.length?historyHTML():"";
-    return;
-  }
-  setup.innerHTML=`<div class="row" style="justify-content:space-between"><div class="row"><span class="label">${fmtName(h.f)} · ${h.g===1?"single match":h.g+"-match series"} · ${esc(h.names[0])} vs ${esc(h.names[1])}</span></div><div class="row"><button class="btn ghost" id="hReset">New draft</button></div></div>`;
-  $("#hReset").onclick=()=>{h.stage="setup";renderH2H();};
-  const teamCard=(k)=>{
-    const t=h.teams[k],cost=teamCost(t,h.f);
-    const me=h.stage==="draft"&&ORDER[h.pick]===k;
-    return `<div class="card team ${k?"b":"a"}"><h3><span><span class="dot"></span>${esc(h.names[k])}</span><span class="num" style="font-size:.95rem">${money(cost)} · ${teamMean(t,h.f).toFixed(0)} pts</span></h3>
-      <div class="slots" style="margin-top:10px" data-team="${k}">${slotsHTML(t,h.f,me?h.active:-1,me)}</div></div>`;
-  };
-  let html=`<div class="h2h-teams">${teamCard(0)}${teamCard(1)}</div>`;
-  if(h.stage==="draft"){
-    const k=ORDER[h.pick];
-    html+=`<div class="card team ${k?"b":"a"}"><div class="row" style="justify-content:space-between;margin-bottom:8px"><p class="turn">Pick ${h.pick+1} of 10 · <span class="who">${esc(h.names[k])}</span> picks ${SLOTS[h.active].label.toLowerCase()}</p><input type="search" id="hSearch" placeholder="Search" aria-label="Search players"></div>
-      <div class="row note" style="margin-bottom:6px;justify-content:space-between"><span>Choose a slot in your team above, then a player</span><span>Proj pts · pts per $ · price</span></div>
-      ${needsRelief(k)?`<p class="note" style="margin-bottom:6px"><span class="pill warn">Budget relief</span> No one fits your remaining budget, because a cheap player you were saving for has been taken. You may take the cheapest player left in this slot, even if it puts you over $20.</p>`:""}
-      <div class="plist" id="hList">${draftList(k,"")}</div></div>`;
-  } else if(h.stage==="predict"){
-    html+=`<div class="card"><h3>Lock in your forecasts</h3><p class="note" style="margin-block:4px 14px">Each player sets their own chance of winning. Be honest: the Brier score rewards calibration, not bravado.</p>
-      <div class="h2h-teams">${[0,1].map(k=>`<label class="team ${k?"b":"a"}" style="display:grid;gap:6px;border:0"><span class="label">${esc(h.names[k])}: my chance of winning</span><input type="range" min="1" max="99" value="${h.preds[k]}" id="hp${k}"><b class="num" id="hpv${k}">${h.preds[k]}%</b></label>`).join("")}</div>
-      <div class="row" style="margin-top:14px"><button class="btn" id="hPlay">Reveal model and play the match</button></div></div>`;
-  } else if(h.stage==="result"){
-    html+=resultHTML();
-  }
-  if(h.rounds.length) html+=historyHTML();
-  body.innerHTML=html;
-  bindTips(body);
-  if(h.stage==="draft"){
-    const k=ORDER[h.pick];
-    body.querySelector(`[data-team="${k}"]`).onclick=e=>{const b=e.target.closest("[data-slot]");if(!b)return;const i=+b.dataset.slot;if(h.teams[k][i]!=null)return;h.active=i;renderH2H();};
-    const s=$("#hSearch"); s.oninput=()=>{$("#hList").innerHTML=draftList(k,s.value.trim().toLowerCase());};
-    $("#hList").parentElement.onclick=e=>{const b=e.target.closest(".prow");if(!b||b.disabled)return;
-      if(b.dataset.relief)h.relief[k]++;
-      h.teams[k][h.active]=+b.dataset.id;h.pick++;
-      if(h.pick>=10){h.stage="predict";}
-      else{const nk=ORDER[h.pick];h.active=nextEmpty(h.teams[nk]);
-        // if next drafter can't afford any eligible player in that slot, try other empty slots
-        const t=h.teams[nk];for(let tries=0;tries<5;tries++){const si=h.active;if(inFmt(h.f).some(p=>canPick(t,si,p.id,h.f,taken())))break;h.active=nextEmpty(t,(si+1)%5);}
-      }
-      renderH2H();};
-  }
-  if(h.stage==="predict"){
-    [0,1].forEach(k=>{$("#hp"+k).oninput=e=>{h.preds[k]=+e.target.value;$("#hpv"+k).textContent=h.preds[k]+"%";};});
-    $("#hPlay").onclick=playMatch;
-  }
-  if(h.stage==="result"){
-    $("#hRematch").onclick=()=>{h.stage="predict";renderH2H();};
-    $("#hNew").onclick=()=>{h.stage="setup";renderH2H();};
-  }
+      <div class="row"><button class="btn" id="dGo">Shuffle and deal</button><span class="note">${poolIds().length} players in this deck</span></div>
+      <ul class="rules note">
+        <li>The opener alternates each lot. Open at the base price, or pass.</li>
+        <li>Once a lot is open, raise by $0.5 or $1, or pass and let the other side have it.</li>
+        <li>You must keep $1 for every empty slot. The bid buttons enforce it.</li>
+        <li>Unsold players come back at last call for $1 each if anyone still has empty slots.</li>
+        <li>Highest fantasy-point total over the series wins.</li>
+      </ul>
+    </div>
+    <div class="fan" aria-hidden="true">${["Virat Kohli","Jasprit Bumrah","Hardik Pandya"].map(n=>cardHTML(pid(n),{f:"t20"})).join("")}</div>
+  </div>`+(A.rounds.length?historyHTML():"");
+  const keepNames=()=>{A.names[0]=$("#dn0").value.trim()||"You"; if($("#dn1")) A.names[1]=$("#dn1").value.trim()||"Player 2";};
+  $("#dOpp").onclick=e=>{const v=e.target.dataset.v;if(!v)return;keepNames();A.ai=v==="ai";A.names[1]=A.ai?"Computer":"Player 2";renderSetup();};
+  $("#dPool").onclick=e=>{const v=e.target.dataset.v;if(!v)return;keepNames();A.pool=v;renderSetup();};
+  $("#dFmt").onclick=e=>{const v=e.target.dataset.v;if(!v)return;keepNames();A.f=v;renderSetup();};
+  $("#dG").onchange=e=>{A.g=+e.target.value;};
+  $("#dGo").onclick=()=>{keepNames();if(A.ai)A.names[1]="Computer";startDeal();};
 }
-function playMatch(){
-  const [A,B]=h.teams,f=h.f;
-  const g=h.g, pModel=winProb(A,B,f,g);
-  const r=mulberry32(hashSeed(A.join()+"|"+B.join()+"|"+(h.seed++)+"|"+Date.now()));
-  const pMC=mcWin(A,B,f,g>1?1500:4000,r,g);
-  const sa=simSeries(A,f,r,g),sb=simSeries(B,f,r,g);
-  const ta=total(sa),tb=total(sb);
+
+// ----- deal -----
+async function startDeal(){
+  const tok=++A.tok;
+  A.deck=shuffleArr(poolIds(),A.rng).slice(0,DEAL_N);
+  A.li=0;A.teams=[[],[]];A.purse=[PURSE,PURSE];A.paid={};A.unsold=[];A.bin=[];A.log=[];A.lot=null;A.justAdded=null;A.stage="deal";
+  $("#duel").innerHTML=`<div class="arena">
+      <div class="card team a purse" id="pA"></div>
+      <div class="card stage-card" id="aStage"></div>
+      <div class="card team b purse" id="pB"></div>
+    </div>
+    <div class="card"><div class="row" style="justify-content:space-between;margin-bottom:12px"><h3>On the table</h3><span class="note">${fmtName(A.f)} · ${A.pool==="IND"?"India":"All nations"} · lots go left to right</span></div><div class="catalogue" id="aDeck"></div></div>`;
+  $("#aStage").innerHTML=`<div class="shoe" id="aShoe">${[0,1,2,3,4].map(()=>`<div class="pcard down" data-role="BAT"><div class="pc-inner"><div class="pc-front"></div><div class="pc-back"><span>F4T</span></div></div></div>`).join("")}</div><p class="turn" style="text-align:center">Shuffling the deck<span class="thinking"></span></p>`;
+  $("#aStage").onclick=onStageClick;
+  $("#aStage").onkeydown=e=>{if((e.key==="Enter"||e.key===" ")&&e.target.classList.contains("bin-pick")){e.preventDefault();e.target.click();}};
+  renderPanels();
+  const grid=$("#aDeck");
+  grid.innerHTML=A.deck.map(id=>cardHTML(id,{down:true})).join("");
+  const cards=[...grid.children];
+  if(!REDUCED){
+    cards.forEach(c=>c.style.opacity="0");
+    const shoe=$("#aShoe"); shoe.classList.add("riffle"); await wait(1300); if(tok!==A.tok)return; shoe.classList.remove("riffle");
+    const s=shoe.getBoundingClientRect();
+    cards.forEach((c,i)=>{const r=c.getBoundingClientRect();c.style.transition="none";c.style.transform=`translate(${s.left+s.width/2-r.left-r.width/2}px,${s.top+s.height/2-r.top-r.height/2}px) rotate(${i%2?-14:14}deg) scale(.75)`;});
+    grid.offsetHeight;
+    cards.forEach((c,i)=>{c.style.transition=`transform .6s cubic-bezier(.2,.8,.2,1) ${i*90}ms, opacity .12s ${i*90}ms`;c.style.transform="";c.style.opacity="1";});
+    await wait(cards.length*90+650); if(tok!==A.tok)return;
+    cards.forEach(c=>{c.style.transition="";});
+  }
+  for(const c of cards){c.classList.remove("down");await wait(70);}
+  await wait(450); if(tok!==A.tok)return;
+  A.stage="auction"; startLot();
+}
+
+// ----- auction -----
+function startLot(){
+  if(need(0)+need(1)===0||A.li>=A.deck.length) return endAuction();
+  const id=A.deck[A.li],base=basePrice(id);
+  const elig=[0,1].filter(k=>need(k)>0&&maxBid(k)>=base);
+  A.lot={id,base,bid:0,leader:null,turn:null,passes:0,elig,fresh:true,result:null,jit:0.85+0.3*A.rng()};
+  if(!elig.length){log(`Nobody can afford ${esc(players[id].name)} at ${money(base)}`);return resolveLot(null);}
+  const opener=A.li%2; A.lot.turn=elig.includes(opener)?opener:elig[0];
+  renderAuction(); maybeAI();
+}
+function act(k,action,inc){
+  const L=A.lot; if(!L||L.result||L.turn!==k||A.stage!=="auction") return;
+  const o=1-k;
+  if(action==="pass"){
+    if(L.leader==null){
+      L.passes++; log(says(k,"passes","pass"));
+      if(L.passes>=L.elig.length||!L.elig.includes(o)) return resolveLot(null);
+      L.turn=o;
+    } else { log(says(k,"drops out","drop out")); return resolveLot(L.leader); }
+  } else {
+    const amt=L.leader==null?L.base:r2(L.bid+inc);
+    if(amt>maxBid(k)) return;
+    L.bid=amt; L.leader=k; log(`${L.passes||inc?says(k,"bids","bid"):says(k,"opens at","open at")} ${money(amt)}`);
+    if(!L.elig.includes(o)||need(o)===0||maxBid(o)<r2(L.bid+0.5)) return resolveLot(k);
+    L.turn=o;
+  }
+  renderAuction(true); maybeAI();
+}
+async function resolveLot(w){
+  const L=A.lot,tok=A.tok;
+  if(w!=null){A.teams[w].push(L.id);A.purse[w]=r2(A.purse[w]-L.bid);A.paid[L.id]=L.bid;A.justAdded=L.id;log(`<b>Sold</b> to ${esc(A.names[w])} for ${money(L.bid)}`);}
+  else {A.unsold.push(L.id);log(`${esc(players[L.id].name)} goes unsold`);}
+  L.result={winner:w,price:L.bid};
+  renderAuction();
+  await wait(1400); if(tok!==A.tok)return;
+  A.li++; startLot();
+}
+function aiLimit(k,L){
+  const deck=A.deck.slice(A.li);
+  const ratio=deck.reduce((s,id)=>s+proj(id,A.f).mean,0)/deck.reduce((s,id)=>s+basePrice(id),0);
+  const fair=proj(L.id,A.f).mean/ratio;
+  const urg=need(k)/Math.max(1,A.deck.length-A.li);
+  let w=fair*(0.95+1.1*urg)*L.jit;
+  w=Math.min(w,maxBid(k),A.purse[k]/need(k)*1.9);
+  return Math.floor(w*2)/2;
+}
+async function maybeAI(){
+  const L=A.lot,tok=A.tok; if(A.stage!=="auction"||!L||L.result||!isAI(L.turn)) return;
+  await wait(800+400*A.rng()); if(tok!==A.tok||A.lot!==L||L.result) return;
+  const w=aiLimit(1,L);
+  if(L.leader==null) act(1,L.base<=w?"bid":"pass",0);
+  else { const inc=(L.bid+1<=w&&A.rng()<.35)?1:.5; act(1,r2(L.bid+inc)<=w?"bid":"pass",inc); }
+}
+function onStageClick(e){
+  const b=e.target.closest("[data-act]");
+  if(b&&!b.disabled&&A.lot&&!isAI(A.lot.turn)) return act(A.lot.turn,b.dataset.act,+b.dataset.inc||0);
+  const c=e.target.closest(".bin-pick");
+  if(c&&A.stage==="lastcall"&&!isAI(A.lcTurn)) takeBin(A.lcTurn,+c.dataset.id);
+}
+function purseHTML(k){
+  const rows=A.teams[k].map(id=>`<div class="${id===A.justAdded?"new":""}"><span>${esc(players[id].name)} <span class="ctry">${players[id].role}</span></span><span class="price">${money(A.paid[id])}</span></div>`).join("")
+    +Array.from({length:need(k)},()=>`<div class="empty"><span>Empty slot</span><span></span></div>`).join("");
+  const turn=(A.stage==="auction"&&A.lot&&!A.lot.result&&A.lot.turn===k)||(A.stage==="lastcall"&&A.lcTurn===k);
+  return `<h3><span><span class="dot"></span>${esc(A.names[k])}${isAI(k)?' <span class="ctry">CPU</span>':""}</span>${turn?'<span class="pill warn">To act</span>':need(k)===0?'<span class="pill good">Full</span>':""}</h3>
+    <div class="row" style="justify-content:space-between;margin-top:8px;align-items:end">
+      <div><span class="label">Purse</span><div class="big">${money(A.purse[k])}</div></div>
+      <div style="text-align:right"><span class="label">Max bid</span><div class="num">${need(k)?money(maxBid(k)):"–"}</div></div>
+    </div>
+    <div class="roster">${rows}</div>
+    <p class="note" style="margin-top:8px">Projected ${teamMean(A.teams[k],A.f).toFixed(0)} pts per match</p>`;
+}
+function renderPanels(){
+  [0,1].forEach(k=>{const el=$(k?"#pB":"#pA");if(!el)return;el.innerHTML=purseHTML(k);
+    el.classList.toggle("turn",(A.stage==="auction"&&A.lot&&!A.lot.result&&A.lot.turn===k)||(A.stage==="lastcall"&&A.lcTurn===k));});
+}
+function syncDeck(){
+  document.querySelectorAll("#aDeck .pcard").forEach(c=>{
+    const id=+c.dataset.id,w=[0,1].find(k=>A.teams[k].includes(id));
+    c.classList.toggle("on-block",A.stage==="auction"&&!!A.lot&&A.lot.id===id&&!A.lot.result);
+    c.classList.toggle("sold",w!=null);c.classList.toggle("sold-a",w===0);c.classList.toggle("sold-b",w===1);
+    c.classList.toggle("unsold",w==null&&A.unsold.includes(id));
+    const f=c.querySelector(".pc-front"); if(w!=null) f.dataset.badge=`${A.names[w]} ${money(A.paid[id])}`; else delete f.dataset.badge;
+  });
+}
+function renderAuction(bump){
+  const L=A.lot;
+  renderPanels(); syncDeck();
+  let controls="";
+  if(L.result) controls="";
+  else if(isAI(L.turn)) controls=`<p class="turn team b" style="border:0"><span class="who">${esc(A.names[1])}</span> is thinking<span class="thinking"></span></p>`;
+  else {
+    const k=L.turn,mb=maxBid(k);
+    const who=`<p class="turn team ${k?"b":"a"}" style="border:0"><span class="who">${esc(A.names[k])}</span> to act <span class="note">· max ${money(mb)}</span></p>`;
+    controls=who+(L.leader==null
+      ?`<div class="row"><button class="btn" data-act="bid" data-inc="0" ${L.base>mb?"disabled":""}>Open at ${money(L.base)}</button><button class="btn ghost" data-act="pass">Pass</button></div>`
+      :`<div class="row"><button class="btn" data-act="bid" data-inc="0.5" ${r2(L.bid+.5)>mb?"disabled":""}>Raise to ${money(r2(L.bid+.5))}</button><button class="btn" data-act="bid" data-inc="1" ${r2(L.bid+1)>mb?"disabled":""}>${money(r2(L.bid+1))}</button><button class="btn ghost" data-act="pass">Pass</button></div>`);
+  }
+  const R=L.result;
+  const stamp=R?(R.winner!=null?`<div class="stamp ${R.winner?"b":"a"}">SOLD<small>${esc(A.names[R.winner])} · ${money(R.price)}</small></div>`:`<div class="stamp none">UNSOLD</div>`):"";
+  $("#aStage").innerHTML=`<div class="stage">
+    <div class="lot-wrap">${cardHTML(L.id,{cls:L.fresh?"enter":""})}${stamp}</div>
+    <div style="display:grid;gap:12px;min-width:0">
+      <span class="label">Lot ${A.li+1} of ${A.deck.length} · ${ROLE_NAME[players[L.id].role]}</span>
+      <div><div class="bidnum ${L.leader==null?"":L.leader?"b":"a"} ${bump?"bump":""}">${money(L.leader==null?L.base:L.bid)}</div>
+        <div class="note">${L.leader==null?"Base price":"High bid · "+esc(A.names[L.leader])}</div></div>
+      ${controls}
+      <div class="log">${A.log.slice(-4).reverse().map(x=>`<span>${x}</span>`).join("")}</div>
+    </div></div>`;
+  L.fresh=false;
+}
+
+// ----- last call -----
+function endAuction(){
+  A.lot=null;
+  const missing=need(0)+need(1);
+  if(!missing) return toPredict();
+  const owned=new Set([...A.teams[0],...A.teams[1]]);
+  A.bin=A.unsold.filter(id=>!owned.has(id));
+  if(A.bin.length<missing){const used=new Set(A.deck);A.bin.push(...shuffleArr(poolIds().filter(id=>!used.has(id)),A.rng).slice(0,missing-A.bin.length+2));}
+  A.stage="lastcall"; syncDeck(); nextLastCall();
+}
+async function nextLastCall(){
+  if(!A.bin.length||need(0)+need(1)===0) return toPredict();
+  A.lcTurn=need(0)>need(1)?0:need(1)>need(0)?1:1-A.lcLast;
+  if(need(A.lcTurn)===0) A.lcTurn=1-A.lcTurn;
+  renderPanels();
+  const k=A.lcTurn;
+  $("#aStage").innerHTML=`<span class="label">Last call · $1 each</span>
+    <p class="turn team ${k?"b":"a"}" style="border:0;margin-block:4px 12px"><span class="who">${esc(A.names[k])}</span> ${isAI(k)?'is choosing<span class="thinking"></span>':"takes one player"}</p>
+    <div class="catalogue">${A.bin.map(id=>cardHTML(id,{cls:isAI(k)?"":"bin-pick"})).join("")}</div>`;
+  if(isAI(k)){const tok=A.tok;await wait(1000);if(tok!==A.tok)return;takeBin(1,A.bin.slice().sort((a,b)=>proj(b,A.f).mean-proj(a,A.f).mean)[0]);}
+}
+function takeBin(k,id){
+  if(!A.bin.includes(id)) return;
+  A.teams[k].push(id);A.purse[k]=r2(A.purse[k]-1);A.paid[id]=1;A.bin=A.bin.filter(x=>x!==id);A.justAdded=id;A.lcLast=k;
+  syncDeck(); nextLastCall();
+}
+
+// ----- forecast + match -----
+function toPredict(){A.stage="predict";A.lot=null;renderPredict();}
+function squadRows(withPts){
+  return [0,1].map(k=>`<div class="team ${k?"b":"a"}" style="padding-top:10px">
+    <div class="row" style="justify-content:space-between"><h3><span class="dot"></span>${esc(A.names[k])}</h3>
+    ${withPts?`<span class="total" id="tot${k}">0</span>`:`<span class="num note">${money(PURSE-A.purse[k])} spent · ${teamMean(A.teams[k],A.f).toFixed(0)} proj pts</span>`}</div>
+    <div class="match-row">${(withPts?withPts[k]:A.teams[k].map(id=>({id}))).map(x=>cardHTML(x.id,{down:!!withPts,extra:withPts?ptsHTML(x):""})).join("")}</div></div>`).join("");
+}
+function ptsHTML(x){
+  const bits=[x.batted?`${x.runs} runs`:"did not bat"];
+  if(proj(x.id,A.f).pr.overs) bits.push(`${x.wkts} wkts`);
+  if(x.catches) bits.push(`${x.catches} ct`);
+  return `<div class="pc-pts"><b data-to="${x.pts}">0</b><span>${bits.join(" · ")}</span></div>`;
+}
+function renderPredict(){
+  A.tok++;
+  const el=$("#duel");
+  const short=[0,1].filter(k=>need(k)>0);
+  el.innerHTML=`<div class="card"><div class="row" style="justify-content:space-between"><h3>Squads locked</h3><span class="label">${fmtName(A.f)} · ${A.g===1?"single match":A.g+"-match series"}</span></div>
+      ${short.length?`<p class="note" style="margin-top:4px">${short.map(k=>esc(A.names[k])).join(" and ")} ran out of players and will play short.</p>`:""}
+      <div class="duel-teams" style="margin-top:8px">${squadRows(null)}</div></div>
+    <div class="card"><h3>Lock in your forecasts</h3><p class="note" style="margin-block:4px 14px">How likely are you to win? The Brier score rewards honest, calibrated forecasts, not confidence.</p>
+      <div class="h2h-teams">${[0,1].map(k=>isAI(k)
+        ?`<div class="team b" style="border:0;display:grid;gap:6px"><span class="label">${esc(A.names[k])}</span><p class="muted">The computer locks its forecast in secret.</p></div>`
+        :`<label class="team ${k?"b":"a"}" style="display:grid;gap:6px;border:0"><span class="label">${esc(A.names[k])}: my chance of winning</span><input type="range" min="1" max="99" value="${A.preds[k]}" id="dp${k}"><b class="num" id="dpv${k}">${A.preds[k]}%</b></label>`).join("")}</div>
+      <div class="row" style="margin-top:14px"><button class="btn" id="dPlay">Lock forecasts and play</button><button class="btn ghost" id="dNew">New auction</button></div></div>`
+    +(A.rounds.length?historyHTML():"");
+  [0,1].forEach(k=>{const s=$("#dp"+k);if(s)s.oninput=e=>{A.preds[k]=+e.target.value;$("#dpv"+k).textContent=A.preds[k]+"%";};});
+  $("#dPlay").onclick=playMatch;
+  $("#dNew").onclick=()=>{A.stage="setup";renderSetup();};
+}
+async function playMatch(){
+  const [T0,T1]=A.teams,f=A.f,g=A.g;
+  const pModel=winProb(T0,T1,f,g);
+  const r=mulberry32((hashSeed(T0.join()+"|"+T1.join())^(Date.now()%1e9))>>>0);
+  const pMC=mcWin(T0,T1,f,g>1?1500:4000,r,g);
+  const sa=simSeries(T0,f,r,g),sb=simSeries(T1,f,r,g),ta=total(sa),tb=total(sb);
   const outA=ta>tb?1:ta<tb?0:.5;
-  const pA1=h.preds[0]/100,pA2=1-h.preds[1]/100;
-  const round={n:h.rounds.length+1,f,g,ta,tb,outA,pModel,pMC,pA1,pA2,
-    brier:{p1:(pA1-outA)**2,p2:(pA2-outA)**2,model:(pModel-outA)**2}};
-  h.rounds.push(round);h.last={round,sa,sb};h.stage="result";renderH2H();
+  const pA1=A.preds[0]/100;
+  let pA2=1-A.preds[1]/100;
+  if(A.ai){const self=Math.min(.95,Math.max(.05,.5+((1-pModel)-.5)*.85+(r()-.5)*.1));pA2=1-self;}
+  const round={n:A.rounds.length+1,f,g,ta,tb,outA,pModel,pMC,pA1,pA2,names:[...A.names],brier:{p1:(pA1-outA)**2,p2:(pA2-outA)**2,model:(pModel-outA)**2}};
+  A.rounds.push(round);A.last={round,sa,sb};A.stage="match";
+  const tok=++A.tok,el=$("#duel"),pa=Math.round(pModel*100);
+  el.innerHTML=`<div class="card">
+    <span class="label">Model's pre-match win probability</span>
+    <div class="probbar" style="margin-top:6px" role="img" aria-label="${esc(A.names[0])} ${pa}%, ${esc(A.names[1])} ${100-pa}%"><div class="pa" id="mPa" style="flex-basis:50%">${esc(A.names[0])} ${pa}%</div><div class="pb" id="mPb" style="flex-basis:50%">${100-pa}% ${esc(A.names[1])}</div></div>
+    <p class="note" style="margin-top:6px">Normal approximation ${(pModel*100).toFixed(1)}% · Monte Carlo, ${g>1?"1,500 series":"4,000 matches"}: ${(pMC*100).toFixed(1)}% for ${esc(A.names[0])}.</p>
+    <div class="duel-teams" style="margin-top:16px">${squadRows([sa,sb])}</div>
+    <div id="mResult" style="margin-top:18px"></div></div>`;
+  await wait(120); if(tok!==A.tok)return;
+  $("#mPa").style.flexBasis=pa+"%"; $("#mPb").style.flexBasis=(100-pa)+"%";
+  await wait(700);
+  const rows=[...el.querySelectorAll(".match-row")].map(x=>[...x.children]),tots=[0,0];
+  for(let i=0;i<SQUAD;i++) for(const k of [0,1]){
+    const c=rows[k][i]; if(!c) continue;
+    if(tok!==A.tok) return;
+    c.classList.remove("down"); await wait(380); if(tok!==A.tok)return;
+    c.classList.add("scored");
+    const b=c.querySelector(".pc-pts b"),pts=+b.dataset.to;
+    countUp(b,0,pts,550); countUp($("#tot"+k),tots[k],tots[k]+pts,550); tots[k]+=pts;
+    await wait(300);
+  }
+  await wait(600); if(tok!==A.tok)return;
+  $("#tot0").textContent=ta; $("#tot1").textContent=tb;
+  $("#mResult").innerHTML=resultHTML(round);
+  el.insertAdjacentHTML("beforeend",historyHTML());
+  $("#dRematch").onclick=()=>{A.stage="predict";renderPredict();};
+  $("#dNew2").onclick=()=>{A.stage="setup";renderSetup();};
 }
-function scorecardHTML(s,k){
-  return `<div class="table-wrap"><table class="scorecard"><thead><tr><th>${esc(h.names[k])}</th><th class="n">Runs</th><th class="n">Wkts</th><th class="n">Ct</th><th class="n">Pts</th></tr></thead><tbody>${s.map(x=>`<tr><td>${esc(players[x.id].name)}</td><td class="n">${x.batted?x.runs:"<span class=muted>dnb</span>"}</td><td class="n">${proj(x.id,h.f).pr.overs?x.wkts+"<span class=muted>/"+x.runsConceded+"</span>":"<span class=muted>–</span>"}</td><td class="n">${x.catches||""}</td><td class="n"><b>${x.pts}</b></td></tr>`).join("")}<tr><td><b>Total</b></td><td></td><td></td><td></td><td class="n"><b>${s.reduce((a,x)=>a+x.pts,0)}</b></td></tr></tbody></table></div>`;
-}
-function resultHTML(){
-  const {round:R,sa,sb}=h.last;
-  const winner=R.outA===1?h.names[0]:R.outA===0?h.names[1]:null;
-  const wc=R.outA===1?"var(--team-a)":"var(--team-b)";
-  const pa=Math.round(R.pModel*100);
-  const rows=[[h.names[0]+" (forecast)",R.pA1,R.brier.p1],[h.names[1]+" (forecast)",R.pA2,R.brier.p2],["Model",R.pModel,R.brier.model]];
+function resultHTML(R){
+  const winner=R.outA===1?0:R.outA===0?1:null;
+  const rows=[[R.names[0]+"'s forecast",R.pA1,R.brier.p1],[R.names[1]+"'s forecast",R.pA2,R.brier.p2],["Model",R.pModel,R.brier.model]];
   const bestB=Math.min(...rows.map(r=>r[2]));
-  return `<div class="card"><p class="result-banner" style="color:${winner?wc:"var(--ink)"}">${winner?esc(winner)+" wins":"Tied match"} <span class="num" style="font-size:1.1rem;color:var(--muted)">${R.ta} – ${R.tb}${R.g>1?" over "+R.g+" matches":""}</span></p>
-    <p class="label" style="margin-block:14px 6px">Model's pre-match win probability</p>
-    <div class="probbar" role="img" aria-label="${esc(h.names[0])} ${pa}%, ${esc(h.names[1])} ${100-pa}%"><div class="pa" style="flex-basis:${pa}%">${esc(h.names[0])} ${pa}%</div><div class="pb" style="flex-basis:${100-pa}%">${100-pa}% ${esc(h.names[1])}</div></div>
-    <p class="note" style="margin-top:6px">Normal approximation ${(R.pModel*100).toFixed(1)}% · Monte Carlo, ${R.g>1?"1,500 series":"4,000 matches"}: ${(R.pMC*100).toFixed(1)}% for ${esc(h.names[0])}.${h.relief.some(x=>x)?" Budget relief picks: "+h.relief.join(" / ")+".":""}</p>
-    <div class="cols-2" style="margin-top:16px">${scorecardHTML(sa,0)}${scorecardHTML(sb,1)}</div>
-    <h3 style="margin-block:18px 6px">Forecast scores this match</h3>
-    <div class="table-wrap"><table><thead><tr><th>Forecaster</th><th class="n">P(${esc(h.names[0])} wins)</th><th class="n">Brier</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td class="n">${(r[1]*100).toFixed(0)}%</td><td class="n">${r[2].toFixed(3)}</td><td>${r[2]===bestB?'<span class="pill good">Best</span>':""}</td></tr>`).join("")}</tbody></table></div>
-    <p class="note" style="margin-top:6px">Brier = (forecast − result)². Lower is better; 0.25 is what a 50/50 guess always scores.</p>
-    <div class="row" style="margin-top:14px"><button class="btn" id="hRematch">Rematch, same teams</button><button class="btn ghost" id="hNew">New draft</button></div></div>`;
+  return `<p class="result-banner" style="color:${winner==null?"var(--ink)":winner?"var(--team-b)":"var(--team-a)"}">${winner==null?"Tied":esc(R.names[winner])+" wins"} <span class="num" style="font-size:1.1rem;color:var(--muted)">${R.ta} – ${R.tb}${R.g>1?" over "+R.g+" matches":""}</span></p>
+    <div class="table-wrap" style="margin-top:12px"><table><thead><tr><th>Forecaster</th><th class="n">P(${esc(R.names[0])} wins)</th><th class="n">Brier</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r[0])}</td><td class="n">${(r[1]*100).toFixed(0)}%</td><td class="n">${r[2].toFixed(3)}</td><td>${r[2]===bestB?'<span class="pill good">Best</span>':""}</td></tr>`).join("")}</tbody></table></div>
+    <p class="note" style="margin-top:6px">Brier = (forecast − result)². Lower is better; always saying 50% scores 0.25.</p>
+    <div class="row" style="margin-top:14px"><button class="btn" id="dRematch">Rematch, same squads</button><button class="btn ghost" id="dNew2">New auction</button></div>`;
 }
 function historyHTML(){
-  const R=h.rounds,n=R.length,avg=k=>R.reduce((s,r)=>s+r.brier[k],0)/n;
+  const R=A.rounds,n=R.length,avg=k=>R.reduce((s,r)=>s+r.brier[k],0)/n;
+  const nm=A.rounds[n-1].names;
   const wins=[R.filter(r=>r.outA===1).length,R.filter(r=>r.outA===0).length];
-  return `<div class="card"><div class="row" style="justify-content:space-between"><h3>Series</h3><span class="label">${n} match${n>1?"es":""}</span></div>
+  return `<div class="card"><div class="row" style="justify-content:space-between"><h3>Series record</h3><span class="label">${n} result${n>1?"s":""}</span></div>
     <div class="stats" style="margin-block:12px">
-      <div class="stat" style="border-color:var(--team-a)"><span class="label">${esc(h.names[0])}</span><b>${wins[0]} W</b><span class="note">mean Brier ${avg("p1").toFixed(3)}</span></div>
-      <div class="stat" style="border-color:var(--team-b)"><span class="label">${esc(h.names[1])}</span><b>${wins[1]} W</b><span class="note">mean Brier ${avg("p2").toFixed(3)}</span></div>
+      <div class="stat" style="border-color:var(--team-a)"><span class="label">Player 1 side</span><b>${wins[0]} W</b><span class="note">mean Brier ${avg("p1").toFixed(3)}</span></div>
+      <div class="stat" style="border-color:var(--team-b)"><span class="label">Player 2 side</span><b>${wins[1]} W</b><span class="note">mean Brier ${avg("p2").toFixed(3)}</span></div>
       <div class="stat" style="border-color:var(--accent)"><span class="label">Model</span><b>${avg("model").toFixed(3)}</b><span class="note">mean Brier</span></div>
     </div>
-    <div class="table-wrap"><table><thead><tr><th>#</th><th>Format</th><th class="n">Games</th><th class="n">Score</th><th class="n">Model P(1)</th><th class="n">P1 says</th><th class="n">P2 says</th></tr></thead><tbody>${R.slice().reverse().map(r=>`<tr><td class="num">${r.n}</td><td>${fmtName(r.f)}</td><td class="n">${r.g}</td><td class="n">${r.ta} – ${r.tb}</td><td class="n">${(r.pModel*100).toFixed(0)}%</td><td class="n">${(r.pA1*100).toFixed(0)}%</td><td class="n">${((1-r.pA2)*100).toFixed(0)}%</td></tr>`).join("")}</tbody></table></div></div>`;
+    <div class="table-wrap"><table><thead><tr><th>#</th><th>Sides</th><th>Format</th><th class="n">Games</th><th class="n">Score</th><th class="n">Model P(1)</th><th class="n">P1 says</th><th class="n">P2 says</th></tr></thead><tbody>${R.slice().reverse().map(r=>`<tr><td class="num">${r.n}</td><td>${esc(r.names[0])} v ${esc(r.names[1])}</td><td>${fmtName(r.f)}</td><td class="n">${r.g}</td><td class="n">${r.ta} – ${r.tb}</td><td class="n">${(r.pModel*100).toFixed(0)}%</td><td class="n">${(r.pA1*100).toFixed(0)}%</td><td class="n">${((1-r.pA2)*100).toFixed(0)}%</td></tr>`).join("")}</tbody></table></div></div>`;
 }
 
 // ---------- Evaluation ----------
@@ -907,7 +1232,7 @@ function start(){
   $("#tNations").textContent=Object.keys(NATION).length;
   // open the picker with a realistic example team so the report shows something
   solo.team=[...OPT[FORMAT]]; solo.team[4]=null; solo.active=4;
-  renderAll(); renderH2H(); renderEvalFmt(); runEval();
+  renderAll(); renderDuel(); renderEvalFmt(); runEval();
   showTab(location.hash.slice(1)||"players");
 }
 start();
